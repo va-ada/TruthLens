@@ -1,0 +1,17 @@
+Source: International Monetary Fund - World Economic Outlook (April 2026), GDP current prices (NGDPD)
+URL: https://www.imf.org/external/datamapper/api/v1/NGDPD
+Published: 2026-04-08
+Retrieved: 2026-10-05
+Type: Official international financial institution
+
+The IMF World Economic Outlook (April 2026) reports gross domestic product at current prices in billions of U.S. dollars. Figures below are copied from the IMF DataMapper series NGDPD. Values for 2026 are IMF projections. Rankings are computed from these IMF figures.
+
+Nominal GDP in 2025 (IMF, April 2026 WEO): United States 30,767.1 billion US dollars; China 19,626.2 billion; Germany 5,048.1 billion; Japan 4,435.2 billion; United Kingdom 4,003.0 billion; India 3,916.3 billion; France 3,368.9 billion.
+
+By these IMF figures, in 2025 the United States is the largest economy in the world by nominal GDP, China is the second largest, Germany is the third largest, Japan is the fourth largest, the United Kingdom is the fifth largest and India is the sixth largest.
+
+Nominal GDP in 2024 (IMF, April 2026 WEO): United States 29,298.0 billion US dollars; China 18,945.1 billion; Germany 4,684.2 billion; Japan 4,190.0 billion; India 3,760.8 billion; United Kingdom 3,695.4 billion; France 3,161.0 billion. In 2024 India was the fifth largest economy by nominal GDP.
+
+IMF projection for 2026: United States 32,383.9 billion US dollars; China 20,851.6 billion; Germany 5,452.9 billion; Japan 4,379.3 billion; United Kingdom 4,264.8 billion; India 4,153.2 billion; France 3,596.1 billion. In the 2026 projection India remains the sixth largest economy by nominal GDP.
+
+India is not the third largest economy in the world by nominal GDP in these IMF figures; Germany is third.

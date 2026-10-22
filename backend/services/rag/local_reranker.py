@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 import numpy as np
+from backend.services.ml_runtime import MODEL_LOCK
 
 class LocalReranker:
     _instance = None
@@ -11,6 +12,10 @@ class LocalReranker:
         return cls._instance
 
     def _load_model(self):
+        with MODEL_LOCK:
+            self._load_model_locked()
+
+    def _load_model_locked(self):
         if self._model is None:
             import time
             
@@ -49,7 +54,8 @@ class LocalReranker:
             
         try:
             pairs = [[query, c.get("text", "")] for c in chunks]
-            scores = self._model.predict(pairs)
+            with MODEL_LOCK:
+                scores = self._model.predict(pairs, show_progress_bar=False)
             
             for i, chunk in enumerate(chunks):
                 chunk["relevance_score"] = float(scores[i])

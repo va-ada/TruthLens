@@ -1,0 +1,26 @@
+# TruthLens reverse proxy. Caddy obtains and renews HTTPS certificates automatically for {$DOMAIN}
+# (use DOMAIN=localhost for a local test: Caddy then uses its own internal CA).
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Browsers must use HTTPS for a year after the first visit (the app adds its own CSP/nosniff/frame headers)
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header -Server
+
+	# Long-running verifications (cloud judge + retrieval) can take ~20-40 s
+	reverse_proxy truthlens:8000 {
+		transport http {
+			read_timeout 90s
+		}
+	}
+
+	# Basic request size cap (uploads are limited to 10 MB by the app as well)
+	request_body {
+		max_size 11MB
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

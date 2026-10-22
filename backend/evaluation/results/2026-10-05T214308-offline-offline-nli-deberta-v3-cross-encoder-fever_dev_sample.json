@@ -1,0 +1,1260 @@
+{
+  "dataset": "backend/evaluation/datasets/fever_dev_sample.jsonl",
+  "limit": null,
+  "seed": 42,
+  "provider_requested": "offline",
+  "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+  "judges_used": {
+    "Offline NLI (DeBERTa-v3 cross-encoder)": 99,
+    "None (no evidence)": 51
+  },
+  "server": "http://127.0.0.1:8087",
+  "run_at": "2026-10-05T21:43:08.825237+00:00",
+  "wall_time_s": 414.5,
+  "metrics": {
+    "n": 150,
+    "errors": 0,
+    "accuracy": 0.5333,
+    "macro_f1": 0.5257,
+    "per_class": {
+      "TRUE": {
+        "precision": 0.714,
+        "recall": 0.3,
+        "f1": 0.423,
+        "support": 50
+      },
+      "FALSE": {
+        "precision": 0.7,
+        "recall": 0.56,
+        "f1": 0.622,
+        "support": 50
+      },
+      "NEI": {
+        "precision": 0.416,
+        "recall": 0.74,
+        "f1": 0.532,
+        "support": 50
+      }
+    },
+    "confusion_matrix": {
+      "TRUE": {
+        "TRUE": 15,
+        "FALSE": 4,
+        "NEI": 31
+      },
+      "FALSE": {
+        "TRUE": 1,
+        "FALSE": 28,
+        "NEI": 21
+      },
+      "NEI": {
+        "TRUE": 5,
+        "FALSE": 8,
+        "NEI": 37
+      }
+    },
+    "mean_latency_s": 2.76
+  },
+  "predictions": [
+    {
+      "claim": "Google Search displays movie runtimes.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.27
+    },
+    {
+      "claim": "Luis Fonsi's given name, which he does not use when performing, is Luis Alfonso Rodríguez López-Cepero.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.73
+    },
+    {
+      "claim": "Lizzy Caplan bought the DVD collectible for the show Party Down.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.39
+    },
+    {
+      "claim": "University of Chicago Law School is ranked first for \"Faculty quality based on American Academy of Arts and Sciences Membership.\"",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.8
+    },
+    {
+      "claim": "Pearl Jam sold many of their own rock songs in the early 1990s.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.65
+    },
+    {
+      "claim": "The Crips are a mob.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.72
+    },
+    {
+      "claim": "Cheese in the Trap (TV series) only stars animals.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.28
+    },
+    {
+      "claim": "West Ham United F.C. was founded by two men.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.78
+    },
+    {
+      "claim": "Mani Ratnam is given credit by many people for changing the profile of Indian cinema.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.23
+    },
+    {
+      "claim": "Brad Wilk was a drummer for Greta in 2000.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.26
+    },
+    {
+      "claim": "Billie Joe Armstrong is a Canadian musician.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.31
+    },
+    {
+      "claim": "Taran Killam isn't a comedian.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.57
+    },
+    {
+      "claim": "Richard Dawkins has been awarded prestigious film awards.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.08
+    },
+    {
+      "claim": "Brad Wilk was a member of Greta in 1990.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.44
+    },
+    {
+      "claim": "Mandy Moore had a career.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.65
+    },
+    {
+      "claim": "Theresa May was a councillor.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.55
+    },
+    {
+      "claim": "Hush (2016 film) was not produced by Jason Blum.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.79
+    },
+    {
+      "claim": "Brazzers is based in Canada.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.56
+    },
+    {
+      "claim": "Talulah Riley appeared in Worcester.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.53
+    },
+    {
+      "claim": "Vedam is only a 2011 American horror film.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.54
+    },
+    {
+      "claim": "Robert Lorenz directed Trouble with the Curve.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.58
+    },
+    {
+      "claim": "On September 6th, 1997, Diana, Princess of Wales's funeral took place.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.49
+    },
+    {
+      "claim": "Part of Dilwale Dulhania Le Jayenge was filmed in France.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.57
+    },
+    {
+      "claim": "AMGTV has pay per view programming.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.56
+    },
+    {
+      "claim": "The Maze Runner's budget was $34 million.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.55
+    },
+    {
+      "claim": "Middle-earth was created by a Canadian writer.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.55
+    },
+    {
+      "claim": "Marvel vs. Capcom: Infinite is a mobile game.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.51
+    },
+    {
+      "claim": "To test the validity of experiments, research is used.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.53
+    },
+    {
+      "claim": "Malta claims to be the historical Melita mentioned in the New Testament.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.51
+    },
+    {
+      "claim": "Southampton F.C. came in third in the First Division.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.57
+    },
+    {
+      "claim": "Raees (film) stars Nawazuddin Siddiqui as IPS Jaideep Ambalal Majmudar.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.55
+    },
+    {
+      "claim": "Toy Story 2 was produced by Lionsgate Films.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.56
+    },
+    {
+      "claim": "Advertising is used to promote a product and it is important to modern civilization.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 8.79
+    },
+    {
+      "claim": "Cleopatre premiered posthumously.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 7.71
+    },
+    {
+      "claim": "The Ellen Show was created by an act of providence.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 7.39
+    },
+    {
+      "claim": "Moesia excluded Romanian Dobrudja.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.31
+    },
+    {
+      "claim": "Barcelona is the capitol city of Catalonia.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.94
+    },
+    {
+      "claim": "The Fly is an American novel.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.51
+    },
+    {
+      "claim": "Road House was released in 1999.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 5.02
+    },
+    {
+      "claim": "Paris (Paris Hilton album) incorporates elements of German.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.12
+    },
+    {
+      "claim": "So You Think You Can Dance premiered on CBS.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.01
+    },
+    {
+      "claim": "Shadowhunters began its second season in Zambia.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.31
+    },
+    {
+      "claim": "Match Point was a film by Woody Allen.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.61
+    },
+    {
+      "claim": "A monk practices religious asceticism.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.17
+    },
+    {
+      "claim": "Joe Rogan was diabetic.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.81
+    },
+    {
+      "claim": "Veeram is an award-winning film.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.98
+    },
+    {
+      "claim": "Kelly Preston was not in The Cat in the Hat.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.0
+    },
+    {
+      "claim": "Stephen Moyer acted in a film adaptation of a book.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.91
+    },
+    {
+      "claim": "The Colosseum's exact location is unknown.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.19
+    },
+    {
+      "claim": "Chris Eubank Jr. is Canadian.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.22
+    },
+    {
+      "claim": "Frozen ranks as the fourth-highest-grossing original film of all time.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.19
+    },
+    {
+      "claim": "Ekta Kapoor never produced an Indian soap opera.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.3
+    },
+    {
+      "claim": "See.SZA.Run is only influenced by soul.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.06
+    },
+    {
+      "claim": "Exotic Birds opened for Queen.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 5.25
+    },
+    {
+      "claim": "Jason Bourne has Julia Stiles as part of the cast.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.6
+    },
+    {
+      "claim": "Brick (film) had 2005 viewers.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.21
+    },
+    {
+      "claim": "Bea Arthur was born on May 13th, 1922 in a log cabin.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.47
+    },
+    {
+      "claim": "Jack Falahee's birth year is 1989.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.54
+    },
+    {
+      "claim": "The Others (2001 film) won zero Goya Awards.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.29
+    },
+    {
+      "claim": "The Cyclades are north of mainland Greece.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 3.35
+    },
+    {
+      "claim": "Sausage Party is a comedy.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.35
+    },
+    {
+      "claim": "The Church of Jesus Christ of Latter-day Saints has a law of marriage.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.05
+    },
+    {
+      "claim": "B. R. Ambedkar was called Baba Saheb by his followers.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.0
+    },
+    {
+      "claim": "Coins of the Swiss franc are officially used coins.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.19
+    },
+    {
+      "claim": "Girl is by an French singer.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.29
+    },
+    {
+      "claim": "Charles Manson led a quasi-commune that arose in Vermont in the late 1960s.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.14
+    },
+    {
+      "claim": "Jewell is best known for her song \"Love or Lust,\" featured in Bill Duke's film, Deep Cover.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.4
+    },
+    {
+      "claim": "The King and I is based on a semi-fictionalized biographical novel by a preacher.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.64
+    },
+    {
+      "claim": "Joseph Goebbels' Propaganda Ministry controlled the news media, arts, and information in Russi.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.17
+    },
+    {
+      "claim": "Same Old Love is from a different album than Revival.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 6.68
+    },
+    {
+      "claim": "Macklemore has never sung with Ryan Lewis.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.4
+    },
+    {
+      "claim": "Practical Magic is based on a 1995 film.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.78
+    },
+    {
+      "claim": "Monetary gain can be a purpose of fraud.",
+      "label": "TRUE",
+      "verdict": "CONFLICTING",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.98
+    },
+    {
+      "claim": "Trevor Griffiths was born on Mars.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.28
+    },
+    {
+      "claim": "Al Jardine sang lead vocals on a song written by a songwriter.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.7
+    },
+    {
+      "claim": "Petyr Baelish is created by an American author George R.R. Martin.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.9
+    },
+    {
+      "claim": "TV Choice advertises TV broadcast programming listings.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.51
+    },
+    {
+      "claim": "After its revival in 2009 Hair (musical) won a Tony.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.67
+    },
+    {
+      "claim": "Vic Mensa is from Houston, Texas.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 5.57
+    },
+    {
+      "claim": "Lee Daniels directed a film based on the novel \"Push.\"",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.76
+    },
+    {
+      "claim": "Marcus Bentley is an American broadcaster.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 3.95
+    },
+    {
+      "claim": "Cthulhu is an intellectual property.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.99
+    },
+    {
+      "claim": "Chris Mullin played with a professional basketball team in the 1990s.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.4
+    },
+    {
+      "claim": "Carlos Santana is a comedian.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 6.22
+    },
+    {
+      "claim": "Eric Bana died in 1968.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.86
+    },
+    {
+      "claim": "Antigua is landlocked.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.84
+    },
+    {
+      "claim": "Britt Robertson is an entertainer.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.03
+    },
+    {
+      "claim": "L. Ron Hubbard spent the remaining years of his life on a ranch.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.49
+    },
+    {
+      "claim": "Highway to Heaven is a drama series.",
+      "label": "TRUE",
+      "verdict": "CONFLICTING",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.27
+    },
+    {
+      "claim": "Punch-Drunk Love features Jeremy Blake's abstract video art.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.84
+    },
+    {
+      "claim": "James Jones won the Three-Point Contest.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.93
+    },
+    {
+      "claim": "No Strings Attached was released in 2007.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.76
+    },
+    {
+      "claim": "Ekta Kapoor worked on a sitcom in 2007.",
+      "label": "NEI",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.76
+    },
+    {
+      "claim": "The series finale of Make It or Break It is ending on its 4th season.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.79
+    },
+    {
+      "claim": "Estonia borders the line.",
+      "label": "FALSE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.73
+    },
+    {
+      "claim": "Invasion literature is a genre of fiction.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.97
+    },
+    {
+      "claim": "Alan White was an Ambassador from California to Boston.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.08
+    },
+    {
+      "claim": "Underdog was directed by Frederik Du Chau.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.62
+    },
+    {
+      "claim": "Dan Brown is an American author with five kids.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.52
+    },
+    {
+      "claim": "There were 3,090,953 Mormon members in Germany.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.9
+    },
+    {
+      "claim": "Some Kentucky inmates are executed by lethal injection instead of the electric chair.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.65
+    },
+    {
+      "claim": "In The 100, teens are not the first to return to Earth after a devastating nuclear apocalypse.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.88
+    },
+    {
+      "claim": "Arjit Singh is an Indian male musician.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.3
+    },
+    {
+      "claim": "Southern Hospitality reached the Top 40 at number 22 on February 10, 2007.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.27
+    },
+    {
+      "claim": "A parent of Jed Whedon was a screenwriter.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.75
+    },
+    {
+      "claim": "Uganda was once under rule.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.23
+    },
+    {
+      "claim": "Great white sharks prefer humans as prey.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.74
+    },
+    {
+      "claim": "Mandy Moore is not an actress.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.21
+    },
+    {
+      "claim": "Sean Penn was in Vietnam.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.06
+    },
+    {
+      "claim": "Garden State was chosen in an official manner.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.78
+    },
+    {
+      "claim": "The screenplay for Natural Born Killers was heavily revised by screenwriter David Veloz.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.08
+    },
+    {
+      "claim": "A monster is frequently ugly.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.55
+    },
+    {
+      "claim": "Ludwig van Beethoven was abandoned by his father Johann van Beethoven and Christian Gottlob Neefe.",
+      "label": "NEI",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.74
+    },
+    {
+      "claim": "XHamster fails to produce a reality series.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.59
+    },
+    {
+      "claim": "Derek Hough starred in a work.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.26
+    },
+    {
+      "claim": "The Bahamas is a city.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.91
+    },
+    {
+      "claim": "Shut Up is a song.",
+      "label": "TRUE",
+      "verdict": "CONFLICTING",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.98
+    },
+    {
+      "claim": "The Bengal tiger has spots.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 7.39
+    },
+    {
+      "claim": "Ann Richards was the Governor of Texas for one year.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.34
+    },
+    {
+      "claim": "Brent Mydland was a member of the Grateful Dead.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.27
+    },
+    {
+      "claim": "Craig David is a retired music performer.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.61
+    },
+    {
+      "claim": "A working animal can perform tasks after being trained.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.93
+    },
+    {
+      "claim": "Birthday Song (2 Chainz song) was produced by a producer.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 6.45
+    },
+    {
+      "claim": "Baloch people are part of a diverse Indo-European ethno-linguistic group and they are cultured.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.43
+    },
+    {
+      "claim": "Zac Efron was born in the 1980s.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.97
+    },
+    {
+      "claim": "NXT Tag Team Championship was created by World Wrestling Entertainment, Inc.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.64
+    },
+    {
+      "claim": "Emmanuel Macron worked as an investment banker.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.8
+    },
+    {
+      "claim": "Truman Capote only met Harper Lee once.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.43
+    },
+    {
+      "claim": "United States Congressmen make up The Blue Dog Coalition.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.95
+    },
+    {
+      "claim": "Guatemala's civil war had two sides.",
+      "label": "TRUE",
+      "verdict": "CONFLICTING",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.3
+    },
+    {
+      "claim": "Tijuana is the center of the Tijuana metropolitan area.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.74
+    },
+    {
+      "claim": "Ripon College has existed.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.19
+    },
+    {
+      "claim": "Tatum O'Neal married the Brooklyn Bridge in 1986.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.55
+    },
+    {
+      "claim": "Philomena is a film nominated for seven awards.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 5.32
+    },
+    {
+      "claim": "Ron Underwood rejected all offers to direct The Adventures of Pluto Nash.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.46
+    },
+    {
+      "claim": "Tie Your Mother Down was only ever released as part of an album instead of as a single.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 6.04
+    },
+    {
+      "claim": "See.SZA.Run is influenced by Jay-Z and Lil Kim.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.78
+    },
+    {
+      "claim": "Polar bears are dependent on international aid.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.37
+    },
+    {
+      "claim": "Golf is played on a court.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.48
+    },
+    {
+      "claim": "\"Dog\" is Duane Chapman's nickname.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.77
+    },
+    {
+      "claim": "Mary of Teck was queen-consort.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.01
+    },
+    {
+      "claim": "The American Civil War was fought between the East and the South.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.59
+    },
+    {
+      "claim": "Martin Van Buren was exclusively unelected.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 0.59
+    },
+    {
+      "claim": "Ian Brennan is a film director.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.19
+    },
+    {
+      "claim": "Maximum Overdrive is a 1986 science fiction action horror comedy film.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 2.02
+    },
+    {
+      "claim": "Temple Grandin was directed by a Croatian filmmaker.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "None (no evidence)",
+      "latency_s": 1.14
+    },
+    {
+      "claim": "Michaela Watkins full name is Michaela Suzanne Watkins, the same as her mother.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.4
+    },
+    {
+      "claim": "Nate Diaz competed in California for Strikeforce.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.19
+    },
+    {
+      "claim": "Keith Stanfield is in Twilight.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.85
+    },
+    {
+      "claim": "Baz Luhrmann's film Waluigi is an epic historical romantic drama.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 1.97
+    }
+  ]
+}

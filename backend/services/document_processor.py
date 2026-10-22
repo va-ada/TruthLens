@@ -3,7 +3,17 @@ import uuid
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import PyPDF2
-from backend.config import CHUNK_SIZE, CHUNK_OVERLAP
+from backend.config import CHUNK_SIZE, CHUNK_OVERLAP, SOURCE_CREDIBILITY_WEIGHTS
+
+# Header lines at the top of each source section in a trusted dossier, e.g.
+#   Source: WHO - Antimicrobial resistance fact sheet
+#   URL: https://www.who.int/...
+#   Published: 2026-07-16
+#   Retrieved: 2026-10-05
+#   Type: Official UN health agency
+# Sections are separated by a line containing only "---".
+HEADER_LINE = re.compile(r"^(Source|URL|Published|Retrieved|Type):\s*(.*)$", re.IGNORECASE)
+SECTION_SEPARATOR = re.compile(r"^\s*---\s*$", re.MULTILINE)
 
 def clean_text(text: str) -> str:
     """Sanitizes text by removing abnormal control chars and normalizing whitespace."""
@@ -17,17 +27,66 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
+def _has_word(text: str, words: List[str]) -> bool:
+    # Whole-word match: plain substrings matched "un" in "fund" and "who" in "whole"
+    return any(re.search(rf"\b{re.escape(w)}\b", text) for w in words)
+
+
 def detect_source_type(filename: str, source_hint: str = "") -> str:
     """Infers credibility tier from source name or filename."""
-    combined = f"{filename} {source_hint}".lower()
-    if any(k in combined for k in ["gov", "ministry", "official", "imf", "world bank", "who", "cdc", "un", "nasa", "rbi", "federal"]):
+    combined = re.sub(r"[_\-.]", " ", f"{filename} {source_hint}".lower())
+    if _has_word(combined, ["gov", "government", "ministry", "official", "imf", "world bank", "who", "cdc", "un", "united nations", "nasa", "rbi", "federal"]):
         return "Government / Official"
-    elif any(k in combined for k in ["nature", "science", "lancet", "ieee", "arxiv", "journal", "academic", "university", "paper", "research", "pubmed"]):
+    elif _has_word(combined, ["nature", "science", "lancet", "ieee", "arxiv", "journal", "academic", "university", "paper", "research", "pubmed"]):
         return "Peer-Reviewed Academic"
-    elif any(k in combined for k in ["reuters", "ap", "bloomberg", "bbc", "hindu", "times", "wsj", "nyt", "guardian", "afp", "news"]):
+    elif _has_word(combined, ["reuters", "ap", "bloomberg", "bbc", "hindu", "times", "wsj", "nyt", "guardian", "afp", "news"]):
         return "Established News"
     else:
         return "General Report"
+
+
+def credibility_for(source_type: str) -> float:
+    """0-1 credibility weight for a source type, from SOURCE_CREDIBILITY_WEIGHTS."""
+    st_lower = (source_type or "").lower()
+    for key, weight in SOURCE_CREDIBILITY_WEIGHTS.items():
+        if key in st_lower:
+            return weight
+    return 0.70
+
+
+def parse_source_sections(text: str) -> List[Dict[str, Any]]:
+    """
+    Splits a dossier into source sections. Each section returns its header metadata
+    (source, url, publication_date, retrieval_date, source_type) and body text.
+    Text without a "Source:" header comes back as a single section with empty metadata.
+    """
+    sections = []
+    for block in SECTION_SEPARATOR.split(text):
+        meta: Dict[str, str] = {}
+        body_lines = []
+        in_header = True
+        for line in block.strip().splitlines():
+            m = HEADER_LINE.match(line.strip()) if in_header else None
+            if m:
+                meta[m.group(1).lower()] = m.group(2).strip()
+                continue
+            if line.strip():
+                in_header = False
+            if not in_header:
+                body_lines.append(line)
+        body = "\n".join(body_lines).strip()
+        if not body:
+            continue
+        published = meta.get("published", "")
+        sections.append({
+            "source": meta.get("source", ""),
+            "url": meta.get("url", ""),
+            "publication_date": "" if published.lower() in ("", "not stated") else published,
+            "retrieval_date": meta.get("retrieved", ""),
+            "source_type": meta.get("type", ""),
+            "text": body
+        })
+    return sections
 
 def extract_text_from_file(file_path: Path) -> List[Dict[str, Any]]:
     """
@@ -145,25 +204,34 @@ def process_document(
 
     for p_info in pages:
         page_num = p_info["page"]
-        text = p_info["text"]
-        raw_chunks = recursive_chunk_text(text)
+        # Text dossiers may hold several sources, each with its own URL and dates; those travel
+        # with every chunk so evidence can cite the exact page and the judge can check freshness
+        sections = parse_source_sections(p_info["text"]) if file_path.suffix.lower() in (".txt", ".md") else \
+            [{"source": "", "url": "", "publication_date": "", "retrieval_date": "", "source_type": "", "text": p_info["text"]}]
 
-        for chunk_text in raw_chunks:
-            if len(chunk_text.strip()) < 25:
-                # Skip meaningless tiny snippets
-                continue
+        for section in sections:
+            sec_source = section["source"] or source
+            sec_type = section["source_type"] or (detect_source_type(filename, sec_source) if section["source"] else source_cat)
+            for chunk_text in recursive_chunk_text(section["text"]):
+                if len(chunk_text.strip()) < 25:
+                    # Skip meaningless tiny snippets
+                    continue
 
-            chunk_counter += 1
-            chunk_id = f"{file_path.stem}_p{page_num}_c{chunk_counter}_{uuid.uuid4().hex[:6]}"
-            all_chunks.append({
-                "chunk_id": chunk_id,
-                "document_name": filename,
-                "source": source,
-                "source_type": source_cat,
-                "page_number": page_num,
-                "text": chunk_text,
-                "char_count": len(chunk_text)
-            })
+                chunk_counter += 1
+                chunk_id = f"{file_path.stem}_p{page_num}_c{chunk_counter}_{uuid.uuid4().hex[:6]}"
+                all_chunks.append({
+                    "chunk_id": chunk_id,
+                    "document_name": filename,
+                    "source": sec_source,
+                    "source_type": sec_type,
+                    "page_number": page_num,
+                    "url": section["url"],
+                    "publication_date": section["publication_date"],
+                    "retrieval_date": section["retrieval_date"],
+                    "credibility_score": credibility_for(sec_type),
+                    "text": chunk_text,
+                    "char_count": len(chunk_text)
+                })
 
     return all_chunks
 

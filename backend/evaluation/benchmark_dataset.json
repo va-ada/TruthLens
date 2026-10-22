@@ -1,42 +1,12 @@
 [
-    {
-        "claim": "St. Francis Institute of Technology is located in Mumbai.",
-        "expected_verdict": "SUPPORTED"
-    },
-    {
-        "claim": "St. Francis Institute of Technology is located in Delhi.",
-        "expected_verdict": "CONTRADICTED"
-    },
-    {
-        "claim": "Joe Biden was the President of the United States in 2023.",
-        "expected_verdict": "SUPPORTED"
-    },
-    {
-        "claim": "Barack Obama was the President of the United States in 2023.",
-        "expected_verdict": "CONTRADICTED"
-    },
-    {
-        "claim": "The moon is made of green cheese.",
-        "expected_verdict": "INSUFFICIENT EVIDENCE"
-    },
-    {
-        "claim": "A standard guitar has 6 strings.",
-        "expected_verdict": "INSUFFICIENT EVIDENCE"
-    },
-    {
-        "claim": "The CEO of Apple in 2021 was Tim Cook.",
-        "expected_verdict": "SUPPORTED"
-    },
-    {
-        "claim": "Tim Cook founded Apple in 1976.",
-        "expected_verdict": "CONTRADICTED"
-    },
-    {
-        "claim": "Albert Einstein won the Nobel Prize in Physics for his discovery of the law of the photoelectric effect.",
-        "expected_verdict": "INSUFFICIENT EVIDENCE"
-    },
-    {
-        "claim": "Albert Einstein won the Nobel Prize in Physics for his theory of relativity.",
-        "expected_verdict": "INSUFFICIENT EVIDENCE"
-    }
+  {"claim": "St. Francis Institute of Technology is located in Mumbai.", "label": "TRUE", "note": "SFIT is in Borivali, Mumbai."},
+  {"claim": "St. Francis Institute of Technology is located in Delhi.", "label": "FALSE", "note": "It is in Mumbai."},
+  {"claim": "Joe Biden was the President of the United States in 2023.", "label": "TRUE", "note": "Term 2021-2025."},
+  {"claim": "Barack Obama was the President of the United States in 2023.", "label": "FALSE", "note": "Term 2009-2017."},
+  {"claim": "The moon is made of green cheese.", "label": "FALSE", "note": "Folklore; the Moon is rock."},
+  {"claim": "A standard guitar has 6 strings.", "label": "TRUE", "note": "Standard guitars have six strings."},
+  {"claim": "The CEO of Apple in 2021 was Tim Cook.", "label": "TRUE", "note": "CEO since 2011."},
+  {"claim": "Tim Cook founded Apple in 1976.", "label": "FALSE", "note": "Founded by Jobs, Wozniak and Wayne."},
+  {"claim": "Albert Einstein won the Nobel Prize in Physics for his discovery of the law of the photoelectric effect.", "label": "TRUE", "note": "1921 Nobel citation wording."},
+  {"claim": "Albert Einstein won the Nobel Prize in Physics for his theory of relativity.", "label": "FALSE", "note": "The prize citation was for the photoelectric effect, not relativity."}
 ]

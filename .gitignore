@@ -48,4 +48,16 @@ find_api.py
 test_live.py
 deep_test.py
 live_script.jsx
-package-lock.json
+
+# Local logs & runtime storage
+*.log
+storage/
+data/uploads/*
+!data/uploads/.gitkeep
+backend/evaluation/results/*.tmp
+
+# Backups
+backups/
+
+# Frontend build tooling (built assets in static/ ARE committed)
+node_modules/

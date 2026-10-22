@@ -5,7 +5,7 @@ class RecommendationEngine:
         pass
 
     def generate(self, claim: StructuredClaim, strategy: dict) -> VerificationRecommendation:
-        
+        subject = claim.subject or "the subject of the claim"
         target_domain = ", ".join(strategy.get("target_domains", [])) if strategy.get("target_domains") else "Official domain for the entity"
         source_type = strategy.get("preferred_source_type", "Official source")
         
@@ -14,12 +14,12 @@ class RecommendationEngine:
         what_refutes = "The source provides contradictory information or lists a different current status."
         
         if claim.claim_type == "PERSON_ROLE":
-            what_to_check = f"Look for the official personnel directory, current leadership page, or recent verified press releases regarding {claim.subject}."
+            what_to_check = f"Look for the official personnel directory, current leadership page, or recent verified press releases regarding {subject}."
             if claim.currentness_required:
-                what_confirms = f"The official source lists {claim.subject} as currently holding the role, with no recent announcements of them stepping down."
-                what_refutes = f"The official source lists someone else in the role, or lists {claim.subject} as 'former' or deceased."
+                what_confirms = f"The official source lists {subject} as currently holding the role, with no recent announcements of them stepping down."
+                what_refutes = f"The official source lists someone else in the role, or lists {subject} as 'former' or deceased."
         elif claim.claim_type == "LOCATION":
-            what_to_check = f"Look for the 'Contact Us' or official address page of {claim.subject}."
+            what_to_check = f"Look for the 'Contact Us' or official address page of {subject}."
             what_confirms = f"The official address exactly matches the location in the claim."
             what_refutes = f"The official address points to a different city/country."
             

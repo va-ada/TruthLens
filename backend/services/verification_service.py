@@ -8,6 +8,7 @@ from backend.models.schemas import (
     SimilarClaim
 )
 from backend.services.retrieval_service import retrieval_service
+from backend.result_cache import result_cache, normalize_claim
 from backend.services.orchestration.verification_orchestrator import verification_orchestrator
 from backend.database.db import (
     save_verification,
@@ -15,11 +16,18 @@ from backend.database.db import (
 )
 
 class VerificationService:
-    def verify(self, request: ClaimVerificationRequest) -> VerificationResponse:
+    @staticmethod
+    def _cache_key(request: ClaimVerificationRequest):
+        """Only plain claims are cached: client context or a caller-supplied key change the judgement."""
+        if request.context_text or request.api_key:
+            return None
+        return (normalize_claim(request.claim), (request.llm_provider or "auto").lower())
+
+    def verify(self, request: ClaimVerificationRequest, client_hash: Optional[str] = None) -> VerificationResponse:
         claim = request.claim.strip()
 
-        # Step 1: Check for similar previously verified claims
-        similar_match = find_most_similar_claim(claim)
+        # Step 1: Check the caller's own history for a similar claim (never other people's)
+        similar_match = find_most_similar_claim(claim, client_hash)
         similar_claim_obj = None
         if similar_match:
             similar_claim_obj = SimilarClaim(
@@ -40,12 +48,22 @@ class VerificationService:
             except Exception as e:
                 print(f"[VerificationService] Auto-seed notice: {e}")
 
+        # Repeated identical claim: reuse the verdict (fresh id/timestamp, still saved to the caller's history)
+        key = self._cache_key(request)
+        cached = result_cache.get(key) if key else None
+        if cached:
+            cached.id = str(uuid.uuid4())
+            cached.timestamp = datetime.now(timezone.utc).isoformat()
+            cached.claim = claim
+            cached.cached = True
+            cached.similar_claim_found = similar_claim_obj
+            if client_hash:
+                save_verification(cached.model_dump(), client_hash)
+            return cached
+
         # Step 3: Delegate to the Evidence-First Orchestrator
         orchestrator_response = verification_orchestrator.process(request)
-        
-        if similar_claim_obj:
-             orchestrator_response.similar_claim_found = similar_claim_obj
-             
+
         # Step 4: Extract retrieved sources for UI grouping
         sources_dict: Dict[str, Dict[str, Any]] = {}
         all_chunks = orchestrator_response.supporting_evidence + orchestrator_response.contradicting_evidence + orchestrator_response.neutral_evidence
@@ -80,8 +98,14 @@ class VerificationService:
         orchestrator_response.retrieved_sources = retrieved_sources_list
         orchestrator_response.source_credibility_score = round((cred_sum / max(1, len(all_chunks))) * 100, 1)
 
-        # Step 5: Save verification
-        save_verification(orchestrator_response.model_dump())
+        if key:
+            result_cache.put(key, orchestrator_response)  # cached without the caller-specific similar claim
+        if similar_claim_obj:
+            orchestrator_response.similar_claim_found = similar_claim_obj
+
+        # Step 5: Save to the caller's history (anonymous callers get a result but no stored history)
+        if client_hash:
+            save_verification(orchestrator_response.model_dump(), client_hash)
 
         return orchestrator_response
 

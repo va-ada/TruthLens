@@ -18,31 +18,27 @@ services:
       dockerfile: Dockerfile
     container_name: truthlens
     ports:
-      - "8000:8000"
+      # Localhost only; set TRUTHLENS_PORT in .env if 8000 is taken on the host
+      - "127.0.0.1:${TRUTHLENS_PORT:-8000}:8000"
     env_file:
       - .env
     environment:
       # Ensure IS_VERCEL is NOT set inside Docker
       - VERCEL=
+      # All runtime data (ChromaDB, SQLite, uploads) lives under one volume, away from the code
+      - TRUTHLENS_DATA_DIR=/app/storage
     volumes:
-      # Persist ChromaDB vector database across restarts
-      - truthlens-chroma-data:/app/chroma_db
-      # Persist SQLite database across restarts
-      - truthlens-sqlite-data:/app/backend/database
-      # Persist user uploads across restarts
-      - truthlens-uploads:/app/data/uploads
+      # Never mount over code directories (a volume on backend/database/ froze db.py inside it)
+      - truthlens-storage:/app/storage
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; r=requests.get('http://localhost:8000/health'); exit(0 if r.status_code==200 else 1)"]
+      test: ["CMD", "python", "-c", "import requests; r=requests.get('http://localhost:8000/health', timeout=8); exit(0 if r.status_code==200 else 1)"]
       interval: 30s
       timeout: 10s
-      start_period: 60s
+      # Model warm-up (embedder, reranker, DeBERTa) can take >60 s on a small or busy CPU
+      start_period: 180s
       retries: 3
 
 volumes:
-  truthlens-chroma-data:
-    name: truthlens-chroma-data
-  truthlens-sqlite-data:
-    name: truthlens-sqlite-data
-  truthlens-uploads:
-    name: truthlens-uploads
+  truthlens-storage:
+    name: truthlens-storage

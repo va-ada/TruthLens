@@ -1,23 +1,61 @@
-# OFFICIAL GOVERNMENT & INTERNATIONAL GOVERNANCE DIRECTORY (2024 - 2025)
-Source: Official Government Portals & United Nations Member States Registry
-Document Reference: GOV-INT-2025-LEADERSHIP / UN-MEMBER-DIR-88
+Source: Prime Minister's Office, Government of India - pmindia.gov.in
+URL: https://www.pmindia.gov.in/en/
+Published: 2026-10-04
+Retrieved: 2026-10-05
+Type: Government official
 
-SECTION 1: LEADERSHIP OF THE REPUBLIC OF INDIA
-According to the Constitution of India and the official portal of the Government of India (india.gov.in):
-- Narendra Modi is the Prime Minister of India (Head of Government of the Republic of India).
-- Narendra Modi has served as the Prime Minister since May 2014, having been re-elected in the general elections of 2019 and June 2024.
-- The President of India (Head of State) is Droupadi Murmu, who assumed office in July 2022.
-- The capital of India is New Delhi. The Parliament of India consists of the Lok Sabha (House of the People) and the Rajya Sabha (Council of States).
+The official website of the Prime Minister of India, on 4 October 2026, reports that the Prime Minister, Shri Narendra Modi, congratulated the Indian women's golf team on winning silver at the Asian Games. Narendra Modi is the Prime Minister of India.
 
-SECTION 2: GLOBAL HEADS OF STATE AND GOVERNMENT (2024 - 2025)
-Authoritative international records confirm the following official constitutional roles:
-- United States of America: The President of the United States serves as the Head of State and Head of Government.
-- United Kingdom: The Prime Minister serves as Head of Government, operating under the constitutional monarchy headed by King Charles III.
-- France: The President of the French Republic serves as the Head of State, alongside the Prime Minister as Head of Government.
-- Japan: The Prime Minister of Japan serves as the Head of Government.
-- Germany: The Federal Chancellor (Bundeskanzler) serves as the Head of Government of the Federal Republic of Germany.
+---
+Source: President's Secretariat, Government of India - presidentofindia.gov.in
+URL: https://presidentofindia.gov.in/
+Published: not stated
+Retrieved: 2026-10-05
+Type: Government official
 
-SECTION 3: UNITED NATIONS & INTERNATIONAL ORGANIZATIONS
-- United Nations (UN): Headquartered in New York City, USA, with 193 sovereign Member States.
-- World Health Organization (WHO): Specialized agency of the UN responsible for international public health, headquartered in Geneva, Switzerland.
-- International Monetary Fund (IMF) and World Bank: Headquartered in Washington, D.C., USA.
+The official website of the President of India identifies Smt. Droupadi Murmu as the President of India.
+
+---
+Source: Prime Minister's Office of Japan - japan.kantei.go.jp
+URL: https://japan.kantei.go.jp/
+Published: 2026-10-03
+Retrieved: 2026-10-05
+Type: Government official
+
+The official website of the Prime Minister's Office of Japan lists statements by Prime Minister TAKAICHI Sanae, including instructions issued on 3 October 2026. Sanae Takaichi is the Prime Minister of Japan.
+
+---
+Source: The White House - The Administration
+URL: https://www.whitehouse.gov/administration/
+Published: not stated
+Retrieved: 2026-10-05
+Type: Government official
+
+The White House identifies Donald J. Trump as the 45th and 47th President of the United States and JD Vance as the Vice President of the United States.
+
+---
+Source: United Nations - About Us
+URL: https://www.un.org/en/about-us
+Published: not stated
+Retrieved: 2026-10-05
+Type: Official international organization
+
+The United Nations was established in 1945 and is currently made up of 193 Member States.
+
+---
+Source: United Nations - Visitors Services New York
+URL: https://www.un.org/en/visit
+Published: not stated
+Retrieved: 2026-10-05
+Type: Official international organization
+
+The United Nations Headquarters visitor check-in office is at 46th St & 1st Ave, New York, NY 10017. United Nations Headquarters is located in New York.
+
+---
+Source: World Health Organization - Who we are
+URL: https://www.who.int/about/who-we-are
+Published: not stated
+Retrieved: 2026-10-05
+Type: Official UN health agency
+
+WHO is the UN agency for health. WHO is an organization of 194 Member States and is based in Geneva, with 6 regional offices.

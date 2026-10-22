@@ -1,22 +1,42 @@
-# WORLD HEALTH ORGANIZATION (WHO) & CDC CLINICAL CONSENSUS GUIDELINES
-Source: World Health Organization (WHO) Guidelines for Antimicrobial Stewardship & CDC National Center for Emerging Infections
-Publication Category: Government / Official Public Health Guidelines
-Report Reference: WHO-AMR-2024-CORE / CDC-ID-882
+Source: U.S. Centers for Disease Control and Prevention - Antibiotic Use: About
+URL: https://www.cdc.gov/antibiotic-use/about/index.html
+Published: 2025-09-23
+Retrieved: 2026-10-05
+Type: Government official public health agency
 
-SECTION 1: MECHANISM OF ANTIMICROBIAL AGENTS (ANTIBIOTICS)
-Antibiotics (also termed antibacterial agents) are medicines that fight bacterial infections in humans and animals. They work by killing bacteria directly (bactericidal) or by inhibiting bacterial cellular growth and reproduction (bacteriostatic), targeting specific bacterial structures such as peptidoglycan cell walls or bacterial 70S ribosomes.
+Antibiotics only treat certain infections caused by bacteria, such as strep throat, whooping cough and urinary tract infection (UTI).
 
-SECTION 2: VIRAL INFECTIONS AND INEFFECTIVENESS OF ANTIBIOTICS
-Antibiotics have ZERO biological activity against viruses. Viruses possess fundamentally different structures and replication mechanisms compared to bacteria, relying entirely on human host cell machinery.
+Antibiotics do not work on viruses, such as colds and runny noses, most sore throats, flu, and most cases of chest colds. Antibiotics cannot cure viral infections like the flu or the common cold.
 
-Consequently, antibiotics CANNOT treat, cure, or shorten the duration of viral infections, including:
-- The common cold (caused primarily by rhinoviruses)
-- Seasonal influenza (flu)
-- COVID-19 (caused by SARS-CoV-2)
-- Acute bronchitis (over 90% viral in origin)
-- Most sore throats (except confirmed streptococcal pharyngitis)
+Antibiotics will not make you feel better if you have a virus. Taking antibiotics when you do not need them will not help you, and their side effects can still cause harm.
 
-Prescribing or consuming antibiotics for viral ailments is medically contraindicated, provides no symptomatic benefit, and accelerates antimicrobial resistance (AMR), which currently causes over 1.2 million direct deaths globally each year.
+---
+Source: World Health Organization - Antimicrobial resistance fact sheet
+URL: https://www.who.int/news-room/fact-sheets/detail/antibiotic-resistance
+Published: 2026-07-16
+Retrieved: 2026-10-05
+Type: Official UN health agency
 
-SECTION 3: VACCINE MECHANISMS AND IMMUNITY
-Vaccines prepare the human adaptive immune system to recognize and neutralize targeted pathogens by exposing antigen-presenting cells to inactivated pathogens, attenuated strains, or recombinant proteins without causing severe disease. Decades of peer-reviewed clinical data confirm vaccines have eradicated smallpox and reduced global polio incidence by over 99%.
+Antimicrobials, including antibiotics, antivirals, antifungals and antiparasitics, are medicines used to prevent and treat infectious diseases in people, animals and plants.
+
+Bacterial antimicrobial resistance (AMR) was estimated to be associated with more than 4.7 million deaths globally in 2021.
+
+---
+Source: U.S. Centers for Disease Control and Prevention - Myths and Facts about COVID-19 Vaccines (archived page)
+URL: https://archive.cdc.gov/www_cdc_gov/covid/vaccines/myths-facts.html
+Published: 2024-08-30
+Retrieved: 2026-10-05
+Type: Government official public health agency
+
+COVID-19 vaccines do not change or interact with your DNA in any way.
+
+The genetic material delivered by mRNA vaccines never enters the nucleus of your cells, which is where your DNA is kept, so the vaccine does not alter your DNA. mRNA COVID-19 vaccines do not alter human DNA.
+
+---
+Source: World Health Organization - Smallpox health topic
+URL: https://www.who.int/health-topics/smallpox
+Published: not stated
+Retrieved: 2026-10-05
+Type: Official UN health agency
+
+In 1980 WHO declared smallpox eradicated, the only infectious disease to achieve this distinction.

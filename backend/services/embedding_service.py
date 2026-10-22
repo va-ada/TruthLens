@@ -1,6 +1,8 @@
+import hashlib
 import numpy as np
 from typing import List, Union
 from backend.config import EMBEDDING_MODEL_NAME
+from backend.services.ml_runtime import MODEL_LOCK
 
 class EmbeddingService:
     _instance = None
@@ -12,6 +14,10 @@ class EmbeddingService:
         return cls._instance
 
     def _load_model(self):
+        with MODEL_LOCK:
+            self._load_model_locked()
+
+    def _load_model_locked(self):
         if self._model is None:
             try:
                 from sentence_transformers import SentenceTransformer
@@ -35,7 +41,8 @@ class EmbeddingService:
 
         if self._model != "fallback":
             try:
-                embeddings = self._model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
+                with MODEL_LOCK:
+                    embeddings = self._model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
                 return embeddings.tolist()
             except Exception as e:
                 print(f"[EmbeddingService] SentenceTransformer encode failed: {e}. Falling back.")
@@ -52,8 +59,9 @@ class EmbeddingService:
         vec = np.zeros(dim, dtype=np.float32)
         tokens = text.lower().split()
         for i, token in enumerate(tokens):
-            h = hash(token)
-            idx = abs(h) % dim
+            # hashlib, not hash(): Python's hash() is randomised per process, so the same text got a
+            # different vector in every worker and stored vectors never matched new queries
+            idx = int.from_bytes(hashlib.md5(token.encode("utf-8")).digest()[:4], "little") % dim
             vec[idx] += 1.0 / (1.0 + (i * 0.05))
         norm = np.linalg.norm(vec)
         if norm > 0:

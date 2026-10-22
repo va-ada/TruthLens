@@ -1,0 +1,136 @@
+{
+  "dataset": "backend/evaluation/benchmark_dataset.json",
+  "limit": null,
+  "seed": 42,
+  "provider_requested": "offline",
+  "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+  "server": "http://127.0.0.1:8080",
+  "run_at": "2026-10-04T20:25:49.879877+00:00",
+  "wall_time_s": 37.0,
+  "metrics": {
+    "n": 10,
+    "errors": 0,
+    "accuracy": 0.5,
+    "macro_f1": 0.3903,
+    "per_class": {
+      "TRUE": {
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.571,
+        "support": 5
+      },
+      "FALSE": {
+        "precision": 0.6,
+        "recall": 0.6,
+        "f1": 0.6,
+        "support": 5
+      },
+      "NEI": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      }
+    },
+    "confusion_matrix": {
+      "TRUE": {
+        "TRUE": 2,
+        "FALSE": 2,
+        "NEI": 1
+      },
+      "FALSE": {
+        "TRUE": 0,
+        "FALSE": 3,
+        "NEI": 2
+      },
+      "NEI": {
+        "TRUE": 0,
+        "FALSE": 0,
+        "NEI": 0
+      }
+    },
+    "mean_latency_s": 3.7
+  },
+  "predictions": [
+    {
+      "claim": "St. Francis Institute of Technology is located in Mumbai.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.09
+    },
+    {
+      "claim": "St. Francis Institute of Technology is located in Delhi.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 2.63
+    },
+    {
+      "claim": "Joe Biden was the President of the United States in 2023.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.42
+    },
+    {
+      "claim": "Barack Obama was the President of the United States in 2023.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.12
+    },
+    {
+      "claim": "The moon is made of green cheese.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.95
+    },
+    {
+      "claim": "A standard guitar has 6 strings.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 4.18
+    },
+    {
+      "claim": "The CEO of Apple in 2021 was Tim Cook.",
+      "label": "TRUE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 5.04
+    },
+    {
+      "claim": "Tim Cook founded Apple in 1976.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.18
+    },
+    {
+      "claim": "Albert Einstein won the Nobel Prize in Physics for his discovery of the law of the photoelectric effect.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.28
+    },
+    {
+      "claim": "Albert Einstein won the Nobel Prize in Physics for his theory of relativity.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Offline NLI (DeBERTa-v3 cross-encoder)",
+      "latency_s": 3.11
+    }
+  ]
+}

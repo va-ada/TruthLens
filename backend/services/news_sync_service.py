@@ -5,7 +5,7 @@ import os
 import re
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
@@ -19,6 +19,8 @@ from backend.database.db import (
 )
 from backend.services.document_processor import document_processor
 from backend.services.retrieval_service import retrieval_service
+from backend.security import fetch_public_url
+from backend.models.schemas import normalize_credibility
 
 logger = logging.getLogger("truthlens.news_sync")
 
@@ -55,6 +57,18 @@ TRUSTED_RSS_FEEDS = [
         "credibility": 90.0
     }
 ]
+
+def parse_rss_xml(xml_data: bytes) -> ET.Element:
+    """
+    Parses an RSS document. Some feeds (PolitiFact) send blank lines or a BOM before the
+    <?xml ...?> declaration, which ElementTree rejects ("XML or text declaration not at start of entity").
+    """
+    return ET.fromstring(xml_data.lstrip(b"\xef\xbb\xbf").lstrip())
+
+
+# Note: Google News feed items link to news.google.com/rss/articles/... redirect pages. Resolving those to
+# the publisher URL requires executing Google's JavaScript, so these links are stored as-is (they still open
+# the original article in a browser).
 
 class NewsSyncService:
     def __init__(self):
@@ -93,7 +107,7 @@ class NewsSyncService:
             with urllib.request.urlopen(req, timeout=12) as response:
                 xml_data = response.read()
 
-            root = ET.fromstring(xml_data)
+            root = parse_rss_xml(xml_data)
             items = root.findall(".//item")
 
             for item in items[:max_items]:
@@ -163,9 +177,10 @@ class NewsSyncService:
                         source_type="LIVE_NEWS_FEED",
                         extra_metadata={
                             "url": url,
-                            "published_date": art["pub_date"],
+                            "publication_date": art["pub_date"],
+                            "retrieval_date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                             "category": art["category"],
-                            "credibility_score": art["credibility"]
+                            "credibility_score": normalize_credibility(art["credibility"])
                         }
                     )
 
@@ -218,14 +233,23 @@ class NewsSyncService:
 
     def train_on_existing_news_dataset(self, max_articles: int = 100) -> Dict[str, Any]:
         """
-        Train / Index the RAG vector store on existing historical news datasets
-        (ISOT Reuters True News & PolitiFact LIAR dataset).
+        Index historical news datasets into the vector store
+        (ISOT Reuters True News & PolitiFact LIAR dataset). Raises FileNotFoundError if neither is present.
         """
         indexed_count = 0
         total_chunks = 0
 
-        # 1. Ingest from data/raw/isot/True.csv
         true_csv_path = DATA_DIR / "raw" / "isot" / "True.csv"
+        liar_csv_path = DATA_DIR / "raw" / "liar" / "liar_all.csv"
+        if not true_csv_path.exists() and not liar_csv_path.exists():
+            raise FileNotFoundError(
+                f"No dataset files found. Place the ISOT Fake News dataset's True.csv at {true_csv_path} "
+                f"(University of Victoria ISOT lab: https://onlineacademiccommunity.uvic.ca/isot/datasets/) and/or "
+                f"the LIAR dataset as a CSV at {liar_csv_path} (Wang 2017, https://www.cs.ucsb.edu/~william/data/liar_dataset.zip; "
+                f"convert the TSV splits to one CSV with columns statement,label,speaker,subject,context)."
+            )
+
+        # 1. Ingest from data/raw/isot/True.csv
         if true_csv_path.exists():
             try:
                 with open(true_csv_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -252,9 +276,9 @@ class NewsSyncService:
                             file_type="CSV_DATASET",
                             source_type="VERIFIED_NEWS_ARCHIVE",
                             extra_metadata={
-                                "published_date": date_str,
+                                "publication_date": date_str,
                                 "category": subject,
-                                "credibility_score": 96.0
+                                "credibility_score": 0.96
                             }
                         )
 
@@ -275,7 +299,6 @@ class NewsSyncService:
                 logger.warning(f"[NewsSyncService] Failed loading True.csv: {e}")
 
         # 2. Ingest from data/raw/liar/liar_all.csv
-        liar_csv_path = DATA_DIR / "raw" / "liar" / "liar_all.csv"
         if liar_csv_path.exists():
             try:
                 with open(liar_csv_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -305,7 +328,7 @@ class NewsSyncService:
                             extra_metadata={
                                 "category": subject,
                                 "speaker": speaker,
-                                "credibility_score": 98.0
+                                "credibility_score": 0.98
                             }
                         )
 
@@ -325,6 +348,14 @@ class NewsSyncService:
             except Exception as e:
                 logger.warning(f"[NewsSyncService] Failed loading liar_all.csv: {e}")
 
+        if total_chunks == 0:
+            return {
+                "status": "error",
+                "message": "Dataset files were found but no rows could be indexed (check the CSV columns).",
+                "articles_indexed": 0,
+                "total_chunks_indexed": 0
+            }
+
         save_document(
             filename="Historical News & Fact-Checking Dataset Training",
             source="ISOT Reuters & PolitiFact Dataset",
@@ -335,7 +366,7 @@ class NewsSyncService:
 
         return {
             "status": "success",
-            "message": f"Trained model on existing news dataset: Ingested {indexed_count} historical news articles & fact-checks ({total_chunks} vector chunks).",
+            "message": f"Indexed existing news datasets into the vector store: {indexed_count} historical news articles & fact-checks ({total_chunks} vector chunks).",
             "articles_indexed": indexed_count,
             "total_chunks_indexed": total_chunks
         }
@@ -376,11 +407,11 @@ class NewsSyncService:
 
         text = raw_text.strip()
         patterns = [
-            r"^(forwarded\s+(as\s+received|message|many\s+times)?[:\s\-]*)",
+            r"^(forwarded\b(\s+(as\s+received|message|many\s+times)\b)?[:\s\-!]*)",
             r"^(fwd[:\s\-]*)",
-            r"^(breaking\s+(news|alert)?[:\s\-\!]*)",
-            r"^(urgent\s+(alert|notice|update|news)?[:\s\-\!]*)",
-            r"^(viral\s+(video|audio|claim|news|message)?[:\s\-\!]*)",
+            r"^(breaking\b(\s+(news|alert)\b)?[:\s\-\!]*)",
+            r"^(urgent\b(\s+(alert|notice|update|news)\b)?[:\s\-\!]*)",
+            r"^(viral\b(\s+(video|audio|claim|news|message)\b)?[:\s\-\!]*)",
             r"^(shocking\s+news[:\s\-\!]*)",
             r"^(alert[:\s\-\!]*)",
             r"^(flash\s+news[:\s\-\!]*)",
@@ -421,15 +452,13 @@ class NewsSyncService:
             url = "https://" + url
 
         try:
-            req = urllib.request.Request(
+            raw_html = fetch_public_url(
                 url,
                 headers={
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
                 }
             )
-            with urllib.request.urlopen(req, timeout=12) as res:
-                raw_html = res.read().decode("utf-8", errors="ignore")
 
             # Extract title
             title_match = re.search(r"<title[^>]*>(.*?)</title>", raw_html, re.IGNORECASE | re.DOTALL)
@@ -456,6 +485,9 @@ class NewsSyncService:
                 "url": url
             }
 
+        except ValueError:
+            # Blocked by the SSRF guard: let the API layer turn this into a 400
+            raise
         except Exception as e:
             logger.warning(f"[NewsSyncService] Failed to extract from URL {url}: {e}")
             return {
@@ -567,8 +599,8 @@ class NewsSyncService:
             "sync_interval_hours": self.sync_interval_hours,
             "last_sync_time": self.last_sync_time or stats.get("last_sync", "Never"),
             "next_sync_time": self.next_sync_time or "Within 24 hours",
-            "total_live_articles": stats.get("total_articles", 0) or 218,
-            "total_news_chunks": stats.get("total_news_chunks", 0) or 218,
+            "total_live_articles": stats.get("total_articles", 0),
+            "total_news_chunks": stats.get("total_news_chunks", 0),
             "active_feeds": [f["name"] for f in TRUSTED_RSS_FEEDS],
             "recent_articles": recent
         }

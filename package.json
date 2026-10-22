@@ -1,0 +1,22 @@
+{
+  "name": "truthlens-frontend",
+  "private": true,
+  "version": "2.1.0",
+  "description": "TruthLens single-page UI. Built to static/ (served by FastAPI); no node needed at runtime.",
+  "scripts": {
+    "build:js": "esbuild frontend/src/main.jsx --bundle --minify --target=es2019 --loader:.js=jsx --define:process.env.NODE_ENV=\\\"production\\\" --outfile=static/app.js",
+    "build:css": "tailwindcss -c frontend/tailwind.config.js -i frontend/src/styles.css -o static/app.css --minify",
+    "build": "npm run build:js && npm run build:css",
+    "check": "npm run build && node frontend/check-build.mjs"
+  },
+  "dependencies": {
+    "chart.js": "4.4.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0",
+    "tailwindcss": "3.4.14"
+  }
+}

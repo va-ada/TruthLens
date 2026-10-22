@@ -1,157 +1,56 @@
-# TruthLens — Docker Setup Guide
+# TruthLens — Docker Setup
 
-## Architecture
+One container runs everything:
+- the FastAPI API and the single-page UI (`index.html`)
+- ChromaDB and SQLite
+- three local models baked into the image: the MiniLM embedder, the MS-MARCO reranker and the DeBERTa-v3 NLI judge
 
-TruthLens runs as a **single Docker container** that hosts:
+PyTorch is the CPU build. The app runs as a non-root user, and the image is about 4 GB, mostly PyTorch and the models.
 
-- **FastAPI backend** (Python 3.11) — API routes, verification logic, ChromaDB, SQLite
-- **Static SPA frontend** — `index.html` served by the same FastAPI process
-- **ML models** — `sentence-transformers/all-MiniLM-L6-v2` (pre-downloaded at build time)
-- **Cloud LLM integration** — Gemini, Groq, OpenAI (via API keys in `.env`)
+## Quick start
 
-```
-┌─────────────────────────────────────────┐
-│            Docker Container             │
-│                                         │
-│  uvicorn (port 8000)                    │
-│    ├── GET /          → index.html      │
-│    ├── GET /api/*     → FastAPI routes  │
-│    ├── GET /health    → health check    │
-│    └── POST /api/verify → fact-check    │
-│                                         │
-│  Volumes:                               │
-│    /app/chroma_db/        → ChromaDB    │
-│    /app/backend/database/ → SQLite      │
-│    /app/data/uploads/     → User files  │
-└─────────────────────────────────────────┘
+```bash
+cp .env.example .env          # then edit: GEMINI_API_KEY (optional), ADMIN_TOKEN, TRUTHLENS_PORT
+docker compose up --build -d  # first build: ~10 min (downloads ~1.5 GB of wheels + ~0.9 GB of models)
+open http://127.0.0.1:${TRUTHLENS_PORT:-8000}
 ```
 
-## Prerequisites
+The port is bound to **127.0.0.1 only**. Set `TRUTHLENS_PORT` in `.env` if 8000 is taken on the host.
 
-- **Docker Desktop** (Windows/Mac/Linux) with Linux containers enabled
-- A Gemini API key (or Groq/OpenAI) — optional but recommended for cloud LLM reasoning
+## Configuration (`.env`)
 
-## Quick Start
+| Variable | Purpose |
+|---|---|
+| `GEMINI_API_KEY` / `GROQ_API_KEY` / `OPENAI_API_KEY` | Optional cloud judge. Without a key the offline DeBERTa NLI judge is used |
+| `GEMINI_MODEL`, `GEMINI_FALLBACK_MODELS` | Model names; Google retires models, so these are configurable |
+| `ADMIN_TOKEN` | Required `X-Admin-Token` for upload / delete / seed / news-sync. **Set it for anything beyond local use** |
+| `ALLOWED_ORIGINS` | Comma-separated origins allowed to call the API cross-origin (the bundled UI needs none) |
+| `TRUTHLENS_PORT` | Host port for compose |
 
-### 1. Create your `.env` file
+`GET /health` reports which judge is active (`"judge": "Google Gemini (...)"` or `"Offline NLI ..."`).
 
-```powershell
-Copy-Item .env.example .env
-# Then edit .env with your API keys
-```
+## Data
 
-### 2. Build and Start
-
-```powershell
-docker compose up --build
-```
-
-First build takes ~3–5 minutes (downloads Python packages + ML models).
-Subsequent builds use Docker layer caching and take seconds.
-
-### 3. Open the Application
-
-```
-http://localhost:8000
-```
-
-## Commands Reference
+All runtime data (ChromaDB, SQLite history, uploads) lives in **one named volume**, `truthlens-storage`,
+mounted at `/app/storage` (via `TRUTHLENS_DATA_DIR`). No volume is mounted over code directories, so rebuilding
+the image always ships the new code.
 
 | Action | Command |
-|--------|---------|
-| **Build & start** | `docker compose up --build` |
-| **Start (detached)** | `docker compose up -d` |
-| **Stop** | `docker compose down` |
-| **View logs** | `docker compose logs -f` |
-| **Restart** | `docker compose restart` |
-| **Rebuild from scratch** | `docker compose build --no-cache` |
-| **Check status** | `docker ps` |
-| **Health check** | `curl http://localhost:8000/health` |
-
-## Environment Variables
-
-All environment variables are documented in `.env.example`. Key variables:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | Recommended | Google Gemini API key for cloud LLM reasoning |
-| `GROQ_API_KEY` | Optional | Groq API key (fallback LLM) |
-| `OPENAI_API_KEY` | Optional | OpenAI API key (fallback LLM) |
-| `DEFAULT_LLM_PROVIDER` | Optional | `auto` (default), `gemini`, `groq`, `openai`, `offline` |
-
-If no API keys are set, TruthLens uses its built-in offline NLI engine.
-
-## Data Persistence
-
-Three named Docker volumes preserve data across container restarts:
-
-| Volume | Container Path | Contents |
-|--------|---------------|----------|
-| `truthlens-chroma-data` | `/app/chroma_db` | ChromaDB vector database |
-| `truthlens-sqlite-data` | `/app/backend/database` | SQLite history & analytics |
-| `truthlens-uploads` | `/app/data/uploads` | User-uploaded documents |
-
-### Verify persistence:
-
-```powershell
-# Start, verify a claim, stop, restart
-docker compose up -d
-# ... use the app, verify claims ...
-docker compose down
-docker compose up -d
-# Check that history and verified claims are still there
-```
-
-### Reset all data:
-
-```powershell
-docker compose down -v    # -v removes volumes
-docker compose up --build
-```
+|---|---|
+| Logs | `docker compose logs -f` |
+| Stop | `docker compose down` |
+| Reset all data | `docker compose down -v` (deletes the volume) |
+| Rebuild from scratch | `docker compose build --no-cache` |
 
 ## Troubleshooting
 
-### Container won't start
+- **Port already in use**: set `TRUTHLENS_PORT=8090` (or any free port) in `.env`.
+- **Cloud judge not used**: check `/health`. Then check `docker compose logs` for `Gemini returned HTTP 4xx/5xx`.
+  A 503 or 429 falls back to other models and then to offline, and each verdict lists that under limitations.
+- **First request slow**: it shouldn't be, because models load at startup (`Models ready` in the logs).
 
-```powershell
-docker compose logs -f
-```
+## Vercel
 
-Check for:
-- Missing `.env` file → copy from `.env.example`
-- Port 8000 already in use → change `ports: "8001:8000"` in `docker-compose.yml`
-
-### Frontend shows JSON instead of UI
-
-The `index.html` must be at the project root. If it's missing, the API returns JSON.
-
-### "No module named 'chromadb'"
-
-Rebuild the image:
-```powershell
-docker compose build --no-cache
-```
-
-### Model download slow on first request
-
-The embedding model is pre-downloaded during `docker build`. If you see download logs at runtime, rebuild:
-```powershell
-docker compose build --no-cache
-```
-
-### Vercel deployment still works?
-
-Yes. Docker files (`Dockerfile`, `docker-compose.yml`, `.dockerignore`) are ignored by Vercel. The `vercel.json`, `api/index.py`, and `index.html` remain untouched.
-
-## Vercel Compatibility
-
-Docker and Vercel coexist in the same repository:
-
-| Deployment | Entry Point | Config |
-|-----------|-------------|--------|
-| **Vercel** | `api/index.py` → `backend.main:app` | `vercel.json` |
-| **Docker** | `uvicorn backend.main:app` | `Dockerfile` + `docker-compose.yml` |
-
-The `IS_VERCEL` flag in `backend/config.py` automatically adjusts paths:
-- **Vercel**: uses `/tmp/` for ChromaDB and SQLite (ephemeral)
-- **Docker/Local**: uses project-relative paths with persistent volumes
+The Vercel path (`vercel.json`, `api/index.py`) is **not supported** in this version. The offline judge needs
+PyTorch, which exceeds Vercel's function size limit, and Vercel would serve the repository files statically.
+Use Docker.

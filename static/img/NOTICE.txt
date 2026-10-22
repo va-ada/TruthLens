@@ -1,0 +1,1 @@
+Earth textures from the three.js repository (r128, examples/textures/planets), MIT License, Copyright 2010-2021 three.js authors.

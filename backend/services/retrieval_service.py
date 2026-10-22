@@ -10,6 +10,16 @@ from backend.config import (
     SOURCE_CREDIBILITY_WEIGHTS
 )
 from backend.services.embedding_service import embedding_service
+from backend.models.schemas import normalize_credibility
+
+
+def get_cred_score(source_type: str) -> float:
+    """Credibility weight (0-1) for a source type when a chunk carries no explicit score."""
+    st_lower = (source_type or "").lower()
+    for key, weight in SOURCE_CREDIBILITY_WEIGHTS.items():
+        if key in st_lower:
+            return weight
+    return 0.70
 
 class RetrievalService:
     _instance = None
@@ -54,9 +64,11 @@ class RetrievalService:
             "source": c["source"],
             "source_type": c.get("source_type", "General"),
             "page_number": int(c.get("page_number", 1)),
-            "url": c.get("url", ""),
-            "publication_date": c.get("publication_date", ""),
-            "retrieval_date": c.get("retrieval_date", "")
+            # Chroma metadata cannot hold None; credibility is always stored on the 0-1 scale
+            "url": c.get("url") or "",
+            "publication_date": c.get("publication_date") or "",
+            "retrieval_date": c.get("retrieval_date") or "",
+            "credibility_score": normalize_credibility(c.get("credibility_score"), get_cred_score(c.get("source_type", "General")))
         } for c in chunks]
 
         # Try ChromaDB first
@@ -112,13 +124,6 @@ class RetrievalService:
         if not query or not query.strip():
             return []
 
-        def get_cred_score(source_type: str) -> float:
-            st_lower = source_type.lower()
-            for key, weight in SOURCE_CREDIBILITY_WEIGHTS.items():
-                if key in st_lower:
-                    return weight
-            return 0.70
-
         query_embedding = embedding_service.embed_query(query)
 
         # Query ChromaDB if active
@@ -144,7 +149,7 @@ class RetrievalService:
                         doc_text = results["documents"][0][idx]
                         
                         source_type = meta.get("source_type", "General")
-                        cred_score = float(meta.get("credibility_score", get_cred_score(source_type)))
+                        cred_score = normalize_credibility(meta.get("credibility_score"), get_cred_score(source_type))
 
                         retrieved.append({
                             "chunk_id": meta.get("chunk_id", ""),
@@ -174,7 +179,7 @@ class RetrievalService:
                 
             meta = item["metadata"]
             source_type = meta.get("source_type", "General")
-            cred_score = float(meta.get("credibility_score", get_cred_score(source_type)))
+            cred_score = normalize_credibility(meta.get("credibility_score"), get_cred_score(source_type))
             
             scored.append({
                 "chunk_id": meta.get("chunk_id", ""),
@@ -207,7 +212,7 @@ class RetrievalService:
                         continue
                         
                     source_type = item.get("category", "Live News")
-                    cred_score = float(item.get("credibility", get_cred_score(source_type)))
+                    cred_score = normalize_credibility(item.get("credibility"), get_cred_score(source_type))
                     
                     scored.append({
                         "chunk_id": f"news_{item.get('id', '')}",

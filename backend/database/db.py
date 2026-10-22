@@ -1,10 +1,16 @@
 import sqlite3
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 import shutil
 from backend.config import DB_PATH, IS_VERCEL, BASE_DIR
+from backend.models.schemas import Verdict, normalize_verdict
+
+def utc_now() -> str:
+    """All stored timestamps are UTC ISO-8601 so they sort correctly and convert cleanly in the UI."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
 
 def ensure_db_ready():
     if IS_VERCEL:
@@ -88,6 +94,34 @@ def init_db():
         )
     """)
     
+    # Per-browser ownership of history rows (sha256 of the anonymous client id). Rows from before this
+    # column existed have NULL and are never returned to anyone.
+    cols = {r["name"] for r in cursor.execute("PRAGMA table_info(verification_history)").fetchall()}
+    if "client_hash" not in cols:
+        cursor.execute("ALTER TABLE verification_history ADD COLUMN client_hash TEXT")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_client ON verification_history (client_hash, timestamp)")
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+            id TEXT PRIMARY KEY,
+            verification_id TEXT NOT NULL,
+            claim TEXT NOT NULL,
+            verdict TEXT NOT NULL,
+            suggested_verdict TEXT,
+            comment TEXT,
+            client_hash TEXT,
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    # Cloud-LLM calls per UTC day, persisted so a restart does not reset the budget
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS llm_budget (
+            day TEXT PRIMARY KEY,
+            used INTEGER NOT NULL DEFAULT 0
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -104,7 +138,7 @@ def save_document(
     doc_id: Optional[str] = None
 ) -> str:
     doc_id = doc_id or str(uuid.uuid4())
-    upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    upload_date = utc_now()
     
     conn = get_connection()
     cursor = conn.cursor()
@@ -142,14 +176,14 @@ def delete_document_by_id(doc_id: str) -> bool:
     conn.close()
     return deleted
 
-def save_verification(data: Dict[str, Any]) -> str:
+def save_verification(data: Dict[str, Any], client_hash: Optional[str] = None) -> str:
     v_id = data.get("id") or str(uuid.uuid4())
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO verification_history 
-        (id, claim, verdict, confidence_score, explanation, key_reasoning, source_credibility_score, evidence_agreement_score, agreement_analysis, raw_response, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, claim, verdict, confidence_score, explanation, key_reasoning, source_credibility_score, evidence_agreement_score, agreement_analysis, raw_response, timestamp, client_hash)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         v_id,
         data["claim"],
@@ -161,39 +195,46 @@ def save_verification(data: Dict[str, Any]) -> str:
         data.get("evidence_agreement_score", 0.0),
         data.get("agreement_analysis", ""),
         json.dumps(data),
-        data.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data.get("timestamp") or utc_now(),
+        client_hash
     ))
     conn.commit()
     conn.close()
     return v_id
 
-def get_verification_history(limit: int = 50) -> List[Dict[str, Any]]:
+def get_verification_history(client_hash: Optional[str], limit: int = 50) -> List[Dict[str, Any]]:
+    """The caller's own verifications, newest first. No client id -> nothing."""
+    if not client_hash:
+        return []
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT id, claim, verdict, confidence_score, explanation, timestamp, raw_response
-        FROM verification_history 
+        FROM verification_history
+        WHERE client_hash = ?
         ORDER BY timestamp DESC LIMIT ?
-    """, (limit,))
+    """, (client_hash, limit))
     rows = cursor.fetchall()
     conn.close()
     results = []
     for r in rows:
         d = dict(r)
-        if d.get("raw_response"):
+        raw = d.pop("raw_response", None)
+        if raw:
             try:
-                full_obj = json.loads(d["raw_response"])
-                results.append(full_obj)
+                results.append(json.loads(raw))
                 continue
             except Exception:
                 pass
         results.append(d)
     return results
 
-def get_verification_by_id(v_id: str) -> Optional[Dict[str, Any]]:
+def get_verification_by_id(v_id: str, client_hash: Optional[str]) -> Optional[Dict[str, Any]]:
+    if not client_hash:
+        return None
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT raw_response FROM verification_history WHERE id = ?", (v_id,))
+    cursor.execute("SELECT raw_response FROM verification_history WHERE id = ? AND client_hash = ?", (v_id, client_hash))
     row = cursor.fetchone()
     conn.close()
     if row and row["raw_response"]:
@@ -203,11 +244,25 @@ def get_verification_by_id(v_id: str) -> Optional[Dict[str, Any]]:
             return None
     return None
 
-def find_most_similar_claim(claim_text: str) -> Optional[Dict[str, Any]]:
-    """Simple token and substring overlap check on existing history."""
+def delete_verification_history(client_hash: Optional[str]) -> int:
+    if not client_hash:
+        return 0
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, claim, verdict, confidence_score, timestamp FROM verification_history")
+    cursor.execute("DELETE FROM verification_history WHERE client_hash = ?", (client_hash,))
+    count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return count
+
+def find_most_similar_claim(claim_text: str, client_hash: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Token-overlap match against the caller's OWN history only (other people's claims stay private)."""
+    if not client_hash:
+        return None
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, claim, verdict, confidence_score, timestamp FROM verification_history WHERE client_hash = ?",
+                   (client_hash,))
     rows = cursor.fetchall()
     conn.close()
     
@@ -246,25 +301,23 @@ def find_most_similar_claim(claim_text: str) -> Optional[Dict[str, Any]]:
             
     return best_match
 
-def get_analytics():
+def get_analytics(client_hash: Optional[str]):
+    """Verdict stats over the caller's own history; document/chunk stats are global (no claim text)."""
     conn = get_connection()
     cursor = conn.cursor()
-    
-    # Total claims
-    cursor.execute("SELECT COUNT(*) as total FROM verification_history")
+    owner = client_hash or "\x00no-client"  # matches no row
+
+    cursor.execute("SELECT COUNT(*) as total FROM verification_history WHERE client_hash = ?", (owner,))
     total_claims = cursor.fetchone()["total"]
-    
-    verdicts = {"SUPPORTED": 0, "REFUTED": 0, "MISLEADING": 0, "INSUFFICIENT EVIDENCE": 0}
-    cursor.execute("SELECT verdict, COUNT(*) as cnt FROM verification_history GROUP BY verdict")
+
+    # Older rows used other verdict spellings; normalise so every row lands in a canonical bucket
+    verdicts = {v.value: 0 for v in Verdict}
+    cursor.execute("SELECT verdict, COUNT(*) as cnt FROM verification_history WHERE client_hash = ? GROUP BY verdict", (owner,))
     for r in cursor.fetchall():
-        v = r["verdict"]
-        if v == "CONTRADICTED":
-            verdicts["REFUTED"] += r["cnt"]
-        elif v in verdicts:
-            verdicts[v] += r["cnt"]
-            
-    # Average confidence
-    cursor.execute("SELECT AVG(confidence_score) as avg_conf, AVG(source_credibility_score) as avg_cred FROM verification_history")
+        verdicts[normalize_verdict(r["verdict"])] += r["cnt"]
+
+    cursor.execute("SELECT AVG(confidence_score) as avg_conf, AVG(source_credibility_score) as avg_cred "
+                   "FROM verification_history WHERE client_hash = ?", (owner,))
     avg_row = cursor.fetchone()
     avg_conf = round(avg_row["avg_conf"] or 0.0, 1)
     avg_cred = round(avg_row["avg_cred"] or 0.0, 1)
@@ -301,7 +354,7 @@ def save_news_article(
     article_id: Optional[str] = None
 ) -> str:
     article_id = article_id or str(uuid.uuid4())
-    ingested_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ingested_at = utc_now()
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -350,3 +403,70 @@ def get_news_stats() -> Dict[str, Any]:
         "last_sync": last_sync
     }
 
+
+
+# ---------------------------------------------------------------- feedback
+
+def save_feedback(verification_id: str, claim: str, verdict: str, suggested_verdict: Optional[str],
+                  comment: Optional[str], client_hash: Optional[str]) -> str:
+    fb_id = str(uuid.uuid4())
+    conn = get_connection()
+    conn.execute("""
+        INSERT INTO feedback (id, verification_id, claim, verdict, suggested_verdict, comment, client_hash, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (fb_id, verification_id, claim, verdict, suggested_verdict, comment, client_hash, utc_now()))
+    conn.commit()
+    conn.close()
+    return fb_id
+
+def get_feedback(limit: int = 200) -> List[Dict[str, Any]]:
+    conn = get_connection()
+    rows = conn.execute("""
+        SELECT id, verification_id, claim, verdict, suggested_verdict, comment, created_at
+        FROM feedback ORDER BY created_at DESC, rowid DESC LIMIT ?
+    """, (limit,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+# ---------------------------------------------------------------- cloud LLM daily budget
+
+def _utc_day() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+def llm_budget_used(day: Optional[str] = None) -> int:
+    conn = get_connection()
+    row = conn.execute("SELECT used FROM llm_budget WHERE day = ?", (day or _utc_day(),)).fetchone()
+    conn.close()
+    return int(row["used"]) if row else 0
+
+def llm_budget_try_consume(limit: int, day: Optional[str] = None) -> bool:
+    """Atomically counts one cloud call if under the limit (limit <= 0 means unlimited)."""
+    day = day or _utc_day()
+    conn = get_connection()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("INSERT OR IGNORE INTO llm_budget (day, used) VALUES (?, 0)", (day,))
+        if limit > 0:
+            cur = conn.execute("UPDATE llm_budget SET used = used + 1 WHERE day = ? AND used < ?", (day, limit))
+        else:
+            cur = conn.execute("UPDATE llm_budget SET used = used + 1 WHERE day = ?", (day,))
+        conn.commit()
+        return cur.rowcount == 1
+    finally:
+        conn.close()
+
+# ---------------------------------------------------------------- retention
+
+def purge_old_records(history_days: int, feedback_days: int) -> Dict[str, int]:
+    """Deletes verification history / feedback older than the retention windows. Timestamps are UTC ISO."""
+    from datetime import timedelta
+    now = datetime.now(timezone.utc)
+    conn = get_connection()
+    h = conn.execute("DELETE FROM verification_history WHERE timestamp < ?",
+                     ((now - timedelta(days=history_days)).isoformat(timespec="seconds"),)).rowcount
+    f = conn.execute("DELETE FROM feedback WHERE created_at < ?",
+                     ((now - timedelta(days=feedback_days)).isoformat(timespec="seconds"),)).rowcount
+    conn.execute("DELETE FROM llm_budget WHERE day < ?", ((now - timedelta(days=7)).strftime("%Y-%m-%d"),))
+    conn.commit()
+    conn.close()
+    return {"history": h, "feedback": f}

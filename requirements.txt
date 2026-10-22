@@ -1,23 +1,20 @@
-# ===== TruthLens: Core & Serverless Dependencies =====
-# Core API Framework
-fastapi>=0.104.0
-uvicorn>=0.24.0
-pydantic>=2.5.0
+# ===== TruthLens runtime dependencies (pinned; needs Python >= 3.12; tested on 3.12 in Docker and 3.14 locally) =====
+# API
+fastapi==0.142.2
+uvicorn==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32
+python-dotenv==1.2.4
 
-# Document Processing & Multi-part
-python-multipart>=0.0.6
-PyPDF2>=3.0.0
-aiofiles>=23.2.0
+# Documents & HTTP
+PyPDF2==3.0.1
+requests==2.34.2
 
-# HTTP & Web Crawling
-requests>=2.31.0
-httpx>=0.25.0
+# Retrieval + offline judge (embeddings, MS-MARCO reranker, DeBERTa NLI)
+numpy==2.5.3
+chromadb==1.5.9
+sentence-transformers==6.1.0
+torch==2.14.1
+transformers==5.18.0
 
-# Optional Cloud LLM Providers
-google-generativeai>=0.8.0
-groq>=0.4.0
-openai>=1.6.0
-
-# Vector Math & Config
-python-dotenv>=1.0.0
-numpy>=1.24.0
+# Cloud LLMs (Gemini / Groq / OpenAI) are called over plain HTTPS with `requests`; no SDKs needed.

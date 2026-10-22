@@ -1,0 +1,150 @@
+{"id": 123647, "claim": "Google Search displays movie runtimes.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Google_Search"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 26082, "claim": "Luis Fonsi's given name, which he does not use when performing, is Luis Alfonso Rodríguez López-Cepero.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 56774, "claim": "Lizzy Caplan bought the DVD collectible for the show Party Down.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 27416, "claim": "University of Chicago Law School is ranked first for \"Faculty quality based on American Academy of Arts and Sciences Membership.\"", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["University_of_Chicago_Law_School"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 141675, "claim": "Pearl Jam sold many of their own rock songs in the early 1990s.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 137276, "claim": "The Crips are a mob.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Crips"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 109073, "claim": "Cheese in the Trap (TV series) only stars animals.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Cheese_in_the_Trap_-LRB-TV_series-RRB-", "Kim_Go-eun", "Seo_Kang-joon"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 140019, "claim": "West Ham United F.C. was founded by two men.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 185736, "claim": "Mani Ratnam is given credit by many people for changing the profile of Indian cinema.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Mani_Ratnam"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 204454, "claim": "Brad Wilk was a drummer for Greta in 2000.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Brad_Wilk", "Greta_-LRB-band-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 108727, "claim": "Billie Joe Armstrong is a Canadian musician.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Billie_Joe_Armstrong"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 61315, "claim": "Taran Killam isn't a comedian.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Taran_Killam"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 226153, "claim": "Richard Dawkins has been awarded prestigious film awards.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Richard_Dawkins"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 204415, "claim": "Brad Wilk was a member of Greta in 1990.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Brad_Wilk"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 85011, "claim": "Mandy Moore had a career.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Mandy_Moore"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 130400, "claim": "Theresa May was a councillor.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Theresa_May"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 51527, "claim": "Hush (2016 film) was not produced by Jason Blum.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Hush_-LRB-2016_film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 39171, "claim": "Brazzers is based in Canada.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Brazzers"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 154191, "claim": "Talulah Riley appeared in Worcester.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 34907, "claim": "Vedam is only a 2011 American horror film.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Vedam_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 135311, "claim": "Robert Lorenz directed Trouble with the Curve.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Trouble_with_the_Curve"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 14790, "claim": "On September 6th, 1997, Diana, Princess of Wales's funeral took place.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Diana,_Princess_of_Wales", "Funeral_of_Diana,_Princess_of_Wales"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 122922, "claim": "Part of Dilwale Dulhania Le Jayenge was filmed in France.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Dilwale_Dulhania_Le_Jayenge"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 65083, "claim": "AMGTV has pay per view programming.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 101224, "claim": "The Maze Runner's budget was $34 million.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["The_Maze_Runner_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 168970, "claim": "Middle-earth was created by a Canadian writer.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Middle-earth"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 129736, "claim": "Marvel vs. Capcom: Infinite is a mobile game.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Marvel_vs._Capcom-COLON-_Infinite", "Microsoft_Windows", "PlayStation_4", "Xbox_One"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 171890, "claim": "To test the validity of experiments, research is used.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Research"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 128811, "claim": "Malta claims to be the historical Melita mentioned in the New Testament.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 224366, "claim": "Southampton F.C. came in third in the First Division.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 134789, "claim": "Raees (film) stars Nawazuddin Siddiqui as IPS Jaideep Ambalal Majmudar.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 154498, "claim": "Toy Story 2 was produced by Lionsgate Films.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Toy_Story_2"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 11556, "claim": "Advertising is used to promote a product and it is important to modern civilization.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 10688, "claim": "Cleopatre premiered posthumously.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Cléopâtre"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 44900, "claim": "The Ellen Show was created by an act of providence.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 173675, "claim": "Moesia excluded Romanian Dobrudja.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Moesia"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 173030, "claim": "Barcelona is the capitol city of Catalonia.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Barcelona"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 182040, "claim": "The Fly is an American novel.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["The_Fly_-LRB-1986_film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 38183, "claim": "Road House was released in 1999.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Road_House_-LRB-1989_film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 54418, "claim": "Paris (Paris Hilton album) incorporates elements of German.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 181133, "claim": "So You Think You Can Dance premiered on CBS.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["So_You_Think_You_Can_Dance_-LRB-U.S._TV_series-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 125709, "claim": "Shadowhunters began its second season in Zambia.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 16437, "claim": "Match Point was a film by Woody Allen.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Match_Point"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 217201, "claim": "A monk practices religious asceticism.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Monk"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 108967, "claim": "Joe Rogan was diabetic.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 163990, "claim": "Veeram is an award-winning film.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 26332, "claim": "Kelly Preston was not in The Cat in the Hat.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Kelly_Preston"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 188132, "claim": "Stephen Moyer acted in a film adaptation of a book.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 70221, "claim": "The Colosseum's exact location is unknown.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Colosseum"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 79472, "claim": "Chris Eubank Jr. is Canadian.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Chris_Eubank_Jr."], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 195922, "claim": "Frozen ranks as the fourth-highest-grossing original film of all time.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Frozen_-LRB-2013_film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 85764, "claim": "Ekta Kapoor never produced an Indian soap opera.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Ekta_Kapoor", "Kyunki_Saas_Bhi_Kabhi_Bahu_Thi"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 211866, "claim": "See.SZA.Run is only influenced by soul.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["See.SZA.Run"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 81446, "claim": "Exotic Birds opened for Queen.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 21644, "claim": "Jason Bourne has Julia Stiles as part of the cast.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Jason_Bourne_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 211786, "claim": "Brick (film) had 2005 viewers.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 193891, "claim": "Bea Arthur was born on May 13th, 1922 in a log cabin.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 6539, "claim": "Jack Falahee's birth year is 1989.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Jack_Falahee"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 151163, "claim": "The Others (2001 film) won zero Goya Awards.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["The_Others_-LRB-2001_film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 85467, "claim": "The Cyclades are north of mainland Greece.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Cyclades"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 79575, "claim": "Sausage Party is a comedy.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Sausage_Party"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 220470, "claim": "The Church of Jesus Christ of Latter-day Saints has a law of marriage.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 18256, "claim": "B. R. Ambedkar was called Baba Saheb by his followers.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 194252, "claim": "Coins of the Swiss franc are officially used coins.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Coins_of_the_Swiss_franc"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 195019, "claim": "Girl is by an French singer.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 76482, "claim": "Charles Manson led a quasi-commune that arose in Vermont in the late 1960s.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Charles_Manson"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 34461, "claim": "Jewell is best known for her song \"Love or Lust,\" featured in Bill Duke's film, Deep Cover.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Jewell_-LRB-singer-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 172287, "claim": "The King and I is based on a semi-fictionalized biographical novel by a preacher.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 156114, "claim": "Joseph Goebbels' Propaganda Ministry controlled the news media, arts, and information in Russi.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 68573, "claim": "Same Old Love is from a different album than Revival.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Same_Old_Love"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 24021, "claim": "Macklemore has never sung with Ryan Lewis.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Macklemore", "Macklemore_&_Ryan_Lewis"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 222760, "claim": "Practical Magic is based on a 1995 film.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Practical_Magic"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 53025, "claim": "Monetary gain can be a purpose of fraud.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Fraud"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 109834, "claim": "Trevor Griffiths was born on Mars.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Trevor_Griffiths"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 178342, "claim": "Al Jardine sang lead vocals on a song written by a songwriter.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Al_Jardine", "Come_Go_with_Me"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 13515, "claim": "Petyr Baelish is created by an American author George R.R. Martin.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Petyr_Baelish"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 132716, "claim": "TV Choice advertises TV broadcast programming listings.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["TV_Choice"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 173609, "claim": "After its revival in 2009 Hair (musical) won a Tony.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 179821, "claim": "Vic Mensa is from Houston, Texas.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Vic_Mensa"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 37067, "claim": "Lee Daniels directed a film based on the novel \"Push.\"", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Lee_Daniels", "Precious_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 201098, "claim": "Marcus Bentley is an American broadcaster.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Marcus_Bentley"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 149731, "claim": "Cthulhu is an intellectual property.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 175870, "claim": "Chris Mullin played with a professional basketball team in the 1990s.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 88383, "claim": "Carlos Santana is a comedian.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Carlos_Santana"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 93300, "claim": "Eric Bana died in 1968.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Eric_Bana"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 126045, "claim": "Antigua is landlocked.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Antigua"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 93610, "claim": "Britt Robertson is an entertainer.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Britt_Robertson"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 194753, "claim": "L. Ron Hubbard spent the remaining years of his life on a ranch.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["L._Ron_Hubbard"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 23475, "claim": "Highway to Heaven is a drama series.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Highway_to_Heaven"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 206999, "claim": "Punch-Drunk Love features Jeremy Blake's abstract video art.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 53662, "claim": "James Jones won the Three-Point Contest.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["James_Jones_-LRB-basketball_player-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 160726, "claim": "No Strings Attached was released in 2007.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["No_Strings_Attached_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 29470, "claim": "Ekta Kapoor worked on a sitcom in 2007.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 38708, "claim": "The series finale of Make It or Break It is ending on its 4th season.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Make_It_or_Break_It"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 150829, "claim": "Estonia borders the line.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Estonia"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 177147, "claim": "Invasion literature is a genre of fiction.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 190657, "claim": "Alan White was an Ambassador from California to Boston.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 78683, "claim": "Underdog was directed by Frederik Du Chau.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Underdog_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 187582, "claim": "Dan Brown is an American author with five kids.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 133558, "claim": "There were 3,090,953 Mormon members in Germany.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 118481, "claim": "Some Kentucky inmates are executed by lethal injection instead of the electric chair.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Electric_chair"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 141126, "claim": "In The 100, teens are not the first to return to Earth after a devastating nuclear apocalypse.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["The_100_-LRB-TV_series-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 57989, "claim": "Arjit Singh is an Indian male musician.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 100318, "claim": "Southern Hospitality reached the Top 40 at number 22 on February 10, 2007.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Southern_Hospitality_-LRB-song-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 134442, "claim": "A parent of Jed Whedon was a screenwriter.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Jed_Whedon"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 126423, "claim": "Uganda was once under rule.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Uganda"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 176628, "claim": "Great white sharks prefer humans as prey.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Great_white_shark"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 95518, "claim": "Mandy Moore is not an actress.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Mandy_Moore"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 13313, "claim": "Sean Penn was in Vietnam.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 53760, "claim": "Garden State was chosen in an official manner.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Garden_State_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 200288, "claim": "The screenplay for Natural Born Killers was heavily revised by screenwriter David Veloz.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 115261, "claim": "A monster is frequently ugly.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 223674, "claim": "Ludwig van Beethoven was abandoned by his father Johann van Beethoven and Christian Gottlob Neefe.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 152187, "claim": "XHamster fails to produce a reality series.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["XHamster"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 117063, "claim": "Derek Hough starred in a work.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Derek_Hough"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 113505, "claim": "The Bahamas is a city.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Archipelagic_state", "Nassau,_Bahamas", "The_Bahamas"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 13588, "claim": "Shut Up is a song.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Shut_Up_-LRB-Stormzy_song-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 59280, "claim": "The Bengal tiger has spots.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 96657, "claim": "Ann Richards was the Governor of Texas for one year.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Ann_Richards"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 8316, "claim": "Brent Mydland was a member of the Grateful Dead.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Grateful_Dead"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 96726, "claim": "Craig David is a retired music performer.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 229304, "claim": "A working animal can perform tasks after being trained.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Working_animal"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 53676, "claim": "Birthday Song (2 Chainz song) was produced by a producer.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Birthday_Song_-LRB-2_Chainz_song-RRB-", "Sonny_Digital"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 17423, "claim": "Baloch people are part of a diverse Indo-European ethno-linguistic group and they are cultured.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 114523, "claim": "Zac Efron was born in the 1980s.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Zac_Efron"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 147158, "claim": "NXT Tag Team Championship was created by World Wrestling Entertainment, Inc.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["NXT_Tag_Team_Championship", "WWE"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 27595, "claim": "Emmanuel Macron worked as an investment banker.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Emmanuel_Macron"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 119165, "claim": "Truman Capote only met Harper Lee once.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Truman_Capote"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 150839, "claim": "United States Congressmen make up The Blue Dog Coalition.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 159080, "claim": "Guatemala's civil war had two sides.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Guatemala"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 199735, "claim": "Tijuana is the center of the Tijuana metropolitan area.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Tijuana"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 55065, "claim": "Ripon College has existed.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Ripon_College_-LRB-Wisconsin-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 64922, "claim": "Tatum O'Neal married the Brooklyn Bridge in 1986.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Tatum_O'Neal"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 35237, "claim": "Philomena is a film nominated for seven awards.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Philomena_-LRB-film-RRB-"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 154919, "claim": "Ron Underwood rejected all offers to direct The Adventures of Pluto Nash.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["The_Adventures_of_Pluto_Nash"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 209846, "claim": "Tie Your Mother Down was only ever released as part of an album instead of as a single.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Tie_Your_Mother_Down"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 211865, "claim": "See.SZA.Run is influenced by Jay-Z and Lil Kim.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 164990, "claim": "Polar bears are dependent on international aid.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 140399, "claim": "Golf is played on a court.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Golf"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 131597, "claim": "\"Dog\" is Duane Chapman's nickname.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Duane_Chapman"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 44566, "claim": "Mary of Teck was queen-consort.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Mary_of_Teck"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 76522, "claim": "The American Civil War was fought between the East and the South.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["American_Civil_War"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 83197, "claim": "Martin Van Buren was exclusively unelected.", "label": "FALSE", "fever_label": "REFUTES", "wiki_pages": ["Martin_Van_Buren"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 192833, "claim": "Ian Brennan is a film director.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 16376, "claim": "Maximum Overdrive is a 1986 science fiction action horror comedy film.", "label": "TRUE", "fever_label": "SUPPORTS", "wiki_pages": ["Maximum_Overdrive"], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 138691, "claim": "Temple Grandin was directed by a Croatian filmmaker.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 225316, "claim": "Michaela Watkins full name is Michaela Suzanne Watkins, the same as her mother.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 111745, "claim": "Nate Diaz competed in California for Strikeforce.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 92535, "claim": "Keith Stanfield is in Twilight.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}
+{"id": 161566, "claim": "Baz Luhrmann's film Waluigi is an epic historical romantic drama.", "label": "NEI", "fever_label": "NOT ENOUGH INFO", "wiki_pages": [], "source": "FEVER 1.0 shared_task_dev"}

@@ -69,3 +69,14 @@ docker-compose.yml
 # Gemini agent / IDE artifacts
 .gemini/
 .agents/
+
+# Tests, logs, local runtime data
+tests/
+backend/tests/
+*.log
+data/uploads/
+storage/
+backups/
+
+# Frontend build tooling (built assets in static/ ARE shipped)
+node_modules/

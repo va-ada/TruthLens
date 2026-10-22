@@ -1,0 +1,460 @@
+{
+  "dataset": "backend/evaluation/datasets/fever_dev_sample.jsonl",
+  "limit": 50,
+  "seed": 42,
+  "provider_requested": "gemini",
+  "judge": "Google Gemini (gemini-flash-lite-latest)",
+  "judges_used": {
+    "Google Gemini (gemini-2.5-flash)": 10,
+    "Google Gemini (gemini-flash-lite-latest)": 40
+  },
+  "server": "http://127.0.0.1:8088",
+  "run_at": "2026-10-05T22:22:09.679428+00:00",
+  "wall_time_s": 282.4,
+  "metrics": {
+    "n": 50,
+    "errors": 0,
+    "accuracy": 0.76,
+    "macro_f1": 0.761,
+    "per_class": {
+      "TRUE": {
+        "precision": 0.833,
+        "recall": 0.789,
+        "f1": 0.811,
+        "support": 19
+      },
+      "FALSE": {
+        "precision": 1.0,
+        "recall": 0.647,
+        "f1": 0.786,
+        "support": 17
+      },
+      "NEI": {
+        "precision": 0.571,
+        "recall": 0.857,
+        "f1": 0.686,
+        "support": 14
+      }
+    },
+    "confusion_matrix": {
+      "TRUE": {
+        "TRUE": 15,
+        "FALSE": 0,
+        "NEI": 4
+      },
+      "FALSE": {
+        "TRUE": 1,
+        "FALSE": 11,
+        "NEI": 5
+      },
+      "NEI": {
+        "TRUE": 2,
+        "FALSE": 0,
+        "NEI": 12
+      }
+    },
+    "mean_latency_s": 5.65
+  },
+  "predictions": [
+    {
+      "claim": "Malta claims to be the historical Melita mentioned in the New Testament.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 10.66
+    },
+    {
+      "claim": "Cheese in the Trap (TV series) only stars animals.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 7.78
+    },
+    {
+      "claim": "Macklemore has never sung with Ryan Lewis.",
+      "label": "FALSE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 17.06
+    },
+    {
+      "claim": "B. R. Ambedkar was called Baba Saheb by his followers.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 9.02
+    },
+    {
+      "claim": "Jack Falahee's birth year is 1989.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 7.0
+    },
+    {
+      "claim": "Moesia excluded Romanian Dobrudja.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 9.41
+    },
+    {
+      "claim": "Marvel vs. Capcom: Infinite is a mobile game.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 11.58
+    },
+    {
+      "claim": "\"Dog\" is Duane Chapman's nickname.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 6.41
+    },
+    {
+      "claim": "Part of Dilwale Dulhania Le Jayenge was filmed in France.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 7.82
+    },
+    {
+      "claim": "Sean Penn was in Vietnam.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-2.5-flash)",
+      "latency_s": 7.17
+    },
+    {
+      "claim": "Mani Ratnam is given credit by many people for changing the profile of Indian cinema.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.46
+    },
+    {
+      "claim": "West Ham United F.C. was founded by two men.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.51
+    },
+    {
+      "claim": "AMGTV has pay per view programming.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.04
+    },
+    {
+      "claim": "Brick (film) had 2005 viewers.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.25
+    },
+    {
+      "claim": "The Cyclades are north of mainland Greece.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.35
+    },
+    {
+      "claim": "Guatemala's civil war had two sides.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.19
+    },
+    {
+      "claim": "Keith Stanfield is in Twilight.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 6.88
+    },
+    {
+      "claim": "Frozen ranks as the fourth-highest-grossing original film of all time.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.6
+    },
+    {
+      "claim": "Mandy Moore is not an actress.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.1
+    },
+    {
+      "claim": "Bea Arthur was born on May 13th, 1922 in a log cabin.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.03
+    },
+    {
+      "claim": "Derek Hough starred in a work.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.96
+    },
+    {
+      "claim": "Practical Magic is based on a 1995 film.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.65
+    },
+    {
+      "claim": "Luis Fonsi's given name, which he does not use when performing, is Luis Alfonso Rodríguez López-Cepero.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.51
+    },
+    {
+      "claim": "Underdog was directed by Frederik Du Chau.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.81
+    },
+    {
+      "claim": "Southern Hospitality reached the Top 40 at number 22 on February 10, 2007.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.35
+    },
+    {
+      "claim": "Robert Lorenz directed Trouble with the Curve.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.91
+    },
+    {
+      "claim": "Punch-Drunk Love features Jeremy Blake's abstract video art.",
+      "label": "NEI",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.73
+    },
+    {
+      "claim": "Jason Bourne has Julia Stiles as part of the cast.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.79
+    },
+    {
+      "claim": "A monk practices religious asceticism.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.93
+    },
+    {
+      "claim": "Maximum Overdrive is a 1986 science fiction action horror comedy film.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.66
+    },
+    {
+      "claim": "Vedam is only a 2011 American horror film.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.05
+    },
+    {
+      "claim": "To test the validity of experiments, research is used.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.48
+    },
+    {
+      "claim": "Emmanuel Macron worked as an investment banker.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.37
+    },
+    {
+      "claim": "A working animal can perform tasks after being trained.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.64
+    },
+    {
+      "claim": "Brad Wilk was a member of Greta in 1990.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.81
+    },
+    {
+      "claim": "Taran Killam isn't a comedian.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.51
+    },
+    {
+      "claim": "The Colosseum's exact location is unknown.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.32
+    },
+    {
+      "claim": "Richard Dawkins has been awarded prestigious film awards.",
+      "label": "TRUE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.39
+    },
+    {
+      "claim": "Veeram is an award-winning film.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.32
+    },
+    {
+      "claim": "Mary of Teck was queen-consort.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.06
+    },
+    {
+      "claim": "Joe Rogan was diabetic.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 5.29
+    },
+    {
+      "claim": "After its revival in 2009 Hair (musical) won a Tony.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 8.8
+    },
+    {
+      "claim": "Cleopatre premiered posthumously.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.81
+    },
+    {
+      "claim": "NXT Tag Team Championship was created by World Wrestling Entertainment, Inc.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.11
+    },
+    {
+      "claim": "The Crips are a mob.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.26
+    },
+    {
+      "claim": "The series finale of Make It or Break It is ending on its 4th season.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 6.35
+    },
+    {
+      "claim": "The Others (2001 film) won zero Goya Awards.",
+      "label": "FALSE",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 3.86
+    },
+    {
+      "claim": "Joseph Goebbels' Propaganda Ministry controlled the news media, arts, and information in Russi.",
+      "label": "NEI",
+      "verdict": "INSUFFICIENT_EVIDENCE",
+      "predicted": "NEI",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 2.91
+    },
+    {
+      "claim": "Theresa May was a councillor.",
+      "label": "TRUE",
+      "verdict": "SUPPORTED_HISTORICALLY",
+      "predicted": "TRUE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 4.38
+    },
+    {
+      "claim": "XHamster fails to produce a reality series.",
+      "label": "FALSE",
+      "verdict": "REFUTED",
+      "predicted": "FALSE",
+      "judge": "Google Gemini (gemini-flash-lite-latest)",
+      "latency_s": 9.03
+    }
+  ]
+}

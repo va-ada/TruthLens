@@ -1,0 +1,17 @@
+Source: Stanford Institute for Human-Centered AI (HAI) - The 2026 AI Index Report
+URL: https://hai.stanford.edu/ai-index/2026-ai-index-report
+Published: 2026
+Retrieved: 2026-10-05
+Type: Academic research report
+
+Industry produced over 90% of notable frontier AI models in 2025, and several of those models now meet or exceed human baselines on PhD-level science questions.
+
+U.S. and Chinese AI models have traded the lead multiple times since early 2025, and the performance gap between them has narrowed.
+
+The United States hosts 5,427 data centers, more than 10 times any other country.
+
+U.S. private AI investment reached 285.9 billion US dollars in 2025, more than 23 times the 12.4 billion US dollars invested in China.
+
+Generative AI reached 53% population adoption within three years, faster than the personal computer or the internet.
+
+Documented AI incidents rose to 362, up from 233 in 2024.

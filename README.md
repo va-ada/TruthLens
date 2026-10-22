@@ -1,227 +1,121 @@
 <div align="center">
 
-# 🛡️ TruthLens V.o.2
-### An Explainable LMTA-Driven Retrieval-Augmented Generation (RAG) System for Automated Fact Verification
+# TruthLens
+### Evidence-grounded, explainable fact checking
 
-[![Python Version](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-black?style=flat-square&logo=python)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-2.0-black?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Serverless](https://img.shields.io/badge/Architecture-Serverless-black?style=flat-square)](https://vercel.com/)
-[![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)](LICENSE)
-[![Deployment](https://img.shields.io/badge/Deployment-Vercel%20%7C%20Local-black?style=flat-square&logo=vercel)](https://vercel.com/)
-
-**See the Truth Behind Every Claim &mdash; Evidence-Grounded, Explainable, and Real-Time.**
-
-[Live Architecture](#-system-architecture) &bull; [Why TruthLens is Unique](#-why-truthlens-is-unique) &bull; [V.o.2 Updates](#-vo2-massive-architecture-upgrade) &bull; [API Reference](#-api-specification) &bull; [Installation](#-installation--quickstart)
+Paste a claim, a news link or a forwarded WhatsApp message. TruthLens retrieves evidence, judges each passage
+for or against the claim, and returns a verdict that shows its sources, its reasoning and its uncertainty.
 
 </div>
 
 ---
 
-## 📌 Executive Summary
+## What it does
 
-**TruthLens** is a specialized, production-grade fact-verification platform built on an explainable Retrieval-Augmented Generation (RAG) architecture. Unlike generic conversational chatbots that are prone to hallucinations, TruthLens acts as an impartial, evidence-bound verification engine.
+1. **Understands the claim.** It recognises who/what the claim is about, whether it is a role, location,
+   statistic or science claim, and whether it is about the past or needs *current* evidence.
+2. **Retrieves evidence**, in parallel, from:
+   - a local vault (ChromaDB) of sourced reference pages in `data/trusted_docs/`, plus uploaded documents and daily RSS news;
+   - live Wikipedia.
 
-The system integrates live Wikipedia search APIs and leverages state-of-the-art Cloud LLMs (Gemini, Groq, OpenAI) to perform advanced semantic reasoning. When presented with a claim, TruthLens dynamically gathers real-time articles, filters the context, and synthesizes a verifiable verdict with complete source attribution. For high-availability, it includes a deterministic pure-Python offline engine that guarantees verification uptime even without API keys.
+   It runs support queries and **contradiction queries** ("<person> former <role>", "<topic> myth"), then
+   reranks with a cross-encoder.
+3. **Judges each passage** as supporting, contradicting or neutral, using either:
+   - **Gemini** (or Groq / OpenAI), if a key is configured, with retries and fallback models; or
+   - an **offline NLI model** (`cross-encoder/nli-deberta-v3-base`), with rules for off-topic sentences,
+     "it's a myth that…" framing and date ranges.
+4. **Applies guardrails and scores.**
+   - Deterministic rules only make verdicts more cautious.
+   - Confidence and agreement are computed per **independent source**, weighted by stance probability × source credibility.
+5. **Explains.** The UI shows each passage's stance with the sentence that decided it, entity and time checks,
+   limitations, and how to verify the claim yourself. Every verdict is labelled *AI-assisted*.
 
-### Core Explainable Verdicts
+| Verdict | Meaning |
+|---|---|
+| `SUPPORTED` | Evidence confirms the claim is true now |
+| `SUPPORTED_HISTORICALLY` | A past-tense claim, confirmed for that time |
+| `OUTDATED` | Claims a present fact that only held in the past (e.g. a former office holder) |
+| `REFUTED` | Evidence contradicts the claim |
+| `CONFLICTING` | Credible sources disagree |
+| `INSUFFICIENT_EVIDENCE` | The evidence doesn't settle it (confidence shown as "—") |
 
-| Verdict | Definition & Criteria |
-| :--- | :--- |
-| ✅ **SUPPORTED_CURRENT** | Authoritative evidence directly verifies that the claim is true *at the current time*. |
-| 📜 **SUPPORTED_HISTORICALLY** | The claim was true in the past, but is no longer the current reality (e.g. past title/role). |
-| ⏳ **OUTDATED** | The claim asserts a present state, but evidence proves it is a past reality that has since changed. |
-| ❌ **CONTRADICTED** | Authoritative sources directly refute or disprove the factual assertions. |
-| ⚠️ **AMBIGUOUS_TIME_CONTEXT** | The claim is partially factual but conflates timelines, omits critical context, or exaggerates metrics. |
-| ❓ **INSUFFICIENT_EVIDENCE** | No authoritative ground truth is found in evidence databases or real-time indexes. |
+Design details: [`docs/VERIFICATION_ENGINE.md`](docs/VERIFICATION_ENGINE.md) · [`docs/EVIDENCE_POLICY.md`](docs/EVIDENCE_POLICY.md)
 
----
+## Measured accuracy
 
-## 🚀 V.o.2 Massive Architecture Upgrade
+Measured with `backend/evaluation/run_benchmark.py`. Verdicts are collapsed to FEVER's three classes
+(TRUE / FALSE / NOT ENOUGH INFO); chance is 33%.
 
-Version 0.2 marks a complete paradigm shift for TruthLens. We have transitioned the project from heavy local PyTorch dependencies (like ChromaDB and MS-MARCO) to a highly scalable **Serverless API architecture** built for edge deployment (e.g., Vercel). By routing heavy reasoning tasks to specialized Cloud LLMs, TruthLens achieves higher fidelity entailment analysis while maintaining a pristine, minimal runtime footprint.
+| Dataset | Judge | n | Accuracy | Macro-F1 |
+|---|---|---|---|---|
+| FEVER dev, seeded sample (`datasets/fever_dev_sample.jsonl`) | **Gemini** (2.5-flash → flash-lite fallback) | 50 | **76.0%** | 0.761 |
+| FEVER dev, seeded sample | Offline NLI (DeBERTa-v3-base) | 150 | **62.7%** | 0.629 |
+| Smoke set (`benchmark_dataset.json`) | Gemini 2.5-flash | 10 | 100% | — |
+| Smoke set | Offline NLI | 10 | 70% | — |
 
-### 1. Multi-Agent Orchestration (LMTA)
-- **Router Agent:** Evaluates the claim's complexity and dynamically routes searches to the Local Vault, Live Web (DuckDuckGo), or Wikipedia.
-- **Researcher Agent:** Aggregates, cleans, and deduplicates evidence from all activated sources simultaneously.
-- **Judge Agent:** Evaluates the final evidence, scores entailment probabilities, resolves conflicts, and casts the final verdict.
+For reference, the original engine scored 2/10 on its own smoke set. The offline judge's FEVER accuracy rose from
+56.0% to 62.7% when live Wikipedia retrieval moved from page summaries to full-article passages. Runs vary by a
+few claims because evidence comes from live Wikipedia. The main remaining offline error is true claims judged
+NOT ENOUGH INFO (evidence not found or not recognised).
 
-### 2. Multi-Provider Cloud LLM Reasoning
-To bypass heavy local machine learning dependencies, TruthLens leverages optimized cloud AI endpoints for advanced semantic understanding:
-- Natively supports **Google Gemini**, **Groq**, and **OpenAI**.
-- Sends retrieved Wikipedia chunks and the claim as a unified prompt to deduce verifiable entailments.
-- Strict JSON-structured output formatting ensures clean UI rendering and zero parsing errors.
+FEVER claims are written against 2017 Wikipedia, so some time-sensitive ones have since changed. Per-claim
+results are in `backend/evaluation/results/`; dataset provenance is in `backend/evaluation/datasets/README.md`.
 
-### 3. Offline Deterministic NLI Engine
-To guarantee 100% uptime even when Cloud LLM API keys are exhausted or missing (e.g., initial Vercel deployments), TruthLens incorporates a built-in deterministic verification engine.
-- Uses advanced semantic string matching, proximity constraints, and overlap scoring.
-- Implements a specialized Academic Demo Cache for instantaneous, verified responses to critical test cases.
-- Natively evaluates whether the evidence **Supports**, **Refutes**, or is **Neutral** to the claim with zero external dependencies.
+## Run it
 
----
+### Production (HTTPS on a server)
+`docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` puts Caddy (automatic HTTPS) in
+front of the app with production settings, rate limits and load shedding. Step-by-step guide, server sizing,
+backups and measured capacity: [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
 
-## 💎 Why TruthLens is Unique
-
-| Feature / Capability | Generic LLMs (ChatGPT / Claude) | Standard Search Engines (Google) | Conventional Fact-Check Sites | **TruthLens V.o.2 RAG Engine** |
-| :--- | :--- | :--- | :--- | :--- |
-| **Hallucination Resistance** | ❌ Prone to plausible fabrication | ❌ Index contains SEO spam & unverified blogs | ✅ High human accuracy | **🛡️ 100% Bound to Authoritative Knowledge Vault & Strict NLI** |
-| **Explainable Evidence** | ❌ Opaque narrative generation | ❌ Gives links, no sentence-level stance | ⚠️ Manual long-form articles | **✅ Fine-grained Entailment vs Contradiction chunk audit** |
-| **Cost & Privacy** | ❌ Requires costly cloud API calls | ❌ Tracks user searches | ✅ Free to read | **⚡ 100% Free, Local, Offline-capable AI Inference** |
-| **WhatsApp / Viral Forward Cleaner**| ❌ Confused by forward boilerplate | ❌ Fails on raw copy-pasted chatter | ❌ No direct tool | **💬 Automated Regex Stripper for clickbait & forward headers** |
-| **URL Article Claim Extractor** | ⚠️ Requires manual copy-pasting | ❌ Inundated with page ads/noise | ❌ Manual submission | **🔗 1-Click Web Scraping & Instant Claim Verification** |
-
----
-
-## 🏛️ System Architecture
-
-TruthLens employs a modular pipeline composed of 5 distinct stages:
-
-```mermaid
-graph TD
-    subgraph Ingestion["1. Knowledge Ingestion & Sync"]
-        A1[Live Web Search: Wikipedia] --> B1[Document Processor & Chunker]
-    end
-
-    subgraph UserFlow["2. Multi-Mode Input & Extraction"]
-        U1[Claim / Text] --> P1[Claim Normalizer]
-    end
-
-    subgraph RAGCore["3. Retrieval & Chunking"]
-        P1 --> Q1[Query Term Extraction]
-        Q1 --> R1[Live Wikipedia Page Search]
-        R1 --> S1[Candidate Evidence Chunks]
-    end
-
-    subgraph Verification["4. NLI Engine & LMTA Judge"]
-        S1 --> N1{Cloud LLM API or Offline Engine}
-        N1 -->|Provider: Gemini/Groq/Offline| N3[Stance Classifier: Support vs Contradiction]
-        N3 --> N4[Agent Orchestrator & Consensus Analyzer]
-    end
-
-    subgraph Synthesis["5. Explainable Synthesis & Delivery"]
-        N4 --> V1[Verdict Generator: SUPPORTED / REFUTED / MISLEADING / INSUFFICIENT]
-        V1 --> V2[Confidence & Credibility Score Computer]
-        V2 --> V3[Black & White Minimalist UI & WhatsApp Exporter]
-    end
-```
-
----
-
-## 🛠️ API Specification
-
-### `POST /api/verify`
-The core endpoint for the LMTA Engine.
-
-**Request Body**
-```json
-{
-  "claim": "The moon is made of green cheese.",
-  "mode": "text"
-}
-```
-
-**Response Payload**
-```json
-{
-  "verdict": "INSUFFICIENT EVIDENCE",
-  "confidence_score": 0,
-  "summary": "No credible evidence was found to support or contradict this claim.",
-  "evidence": {
-    "supporting_chunks": [],
-    "contradicting_chunks": [],
-    "neutral_chunks": []
-  },
-  "llm_provider_used": "Local NLI + LMTA Agentic Pipeline"
-}
-```
-
----
-
-## ⚡ Installation & Quickstart
-
-### 1. Clone the Repository
+### Docker (local)
 ```bash
-git clone https://github.com/Prashantj44/Truth-Lens.git
-cd Truth-Lens
+cp .env.example .env            # add GEMINI_API_KEY (optional) and ADMIN_TOKEN
+docker compose up --build -d    # first build ~10 min; models are baked into the image
+open http://127.0.0.1:8000      # or the TRUTHLENS_PORT you set in .env
 ```
+See [`docs/DOCKER_SETUP.md`](docs/DOCKER_SETUP.md).
 
-### 2. Install Dependencies
+### Local (Python ≥ 3.12)
 ```bash
-pip install -r requirements.txt
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+cp .env.example .env
+uvicorn backend.main:app --port 8000
 ```
+The first start downloads ~1 GB of models. `GET /health` shows which judge is active.
 
-### 3. Setup Environment Variables
-TruthLens relies on cloud LLMs for the highest fidelity fact-checking. 
-Create a `.env` file in the root directory (or configure Vercel Environment Variables) with your preferred provider:
-- `GEMINI_API_KEY`: Required for Google Gemini 2.0 Flash / 1.5 Flash processing.
-- `GROQ_API_KEY`: (Optional) For high-speed Llama 3 inference.
-- `OPENAI_API_KEY`: (Optional) For GPT-4o-mini inference.
-
-*Note: If no API keys are provided, TruthLens will seamlessly fallback to its built-in Offline Deterministic verification engine.*
-
-### 4. Launch TruthLens Engine (Local FastAPI Server)
+### Tests
 ```bash
-python -m uvicorn api.index:app --host 127.0.0.1 --port 8000 --reload
+pytest -q              # offline suite (no network, no API calls)
+pytest -m network      # live Wikipedia integration tests
 ```
 
-### 5. Open in Browser
-Open **`http://127.0.0.1:8000`** in your browser to access the complete application.
+## API
 
-### 6. Automated Testing Suite
-TruthLens comes with a comprehensive, production-grade test suite to verify UI error handling, backend logic, and model entailment accuracy.
-- **Run Model Logic Tests:** `python deep_test.py`
-- **Run Integration Suite:** `python run_backend_test.py`
-- **Run Adversarial Audit:** `python audit_tests.py`
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/verify` | `{"claim": "...", "context_text"?: "...", "llm_provider"?: "auto\|gemini\|groq\|openai\|offline"}` → verdict, confidence, per-passage evidence with rationale, entity/temporal analysis, recommendation, limitations |
+| `POST /api/news/extract-url` | Headline from a public news URL (internal/private addresses are refused) |
+| `POST /api/news/clean-forward` | Strips "Forwarded / BREAKING / share to 10 groups" boilerplate from a message |
+| `GET/DELETE /api/history`, `GET /api/analytics` | The caller's own past verifications (scoped by the browser's anonymous `X-Client-Id`; kept 30 days) |
+| `POST /api/feedback` | "Report wrong verdict" (admin reads them with `GET /api/feedback`) |
+| `POST /api/upload`, `DELETE /api/documents/{id}`, `POST /api/seed`, `POST /api/news/sync` | Admin actions (`X-Admin-Token` when `ADMIN_TOKEN` is set) |
+| `GET /health` | Status, indexed chunks, active judge |
 
-## ☁️ Vercel Deployment
-TruthLens is deeply optimized for **Vercel Serverless deployments**.
-- A `vercel.json` file is included in the root directory to automatically route API and UI requests to `api/index.py`.
-- **Zero Heavy Dependencies**: To fit gracefully within Vercel's strict 250MB size limit on serverless functions, the architecture relies exclusively on lightweight APIs (FastAPI) and Cloud LLM HTTP connections rather than bulky local PyTorch/ChromaDB models.
-- **Immediate Deployment**: Simply connect your GitHub repository to Vercel and deploy. Be sure to configure your `GEMINI_API_KEY` in the Vercel Dashboard for optimal performance.
+Interactive docs at `/docs`.
 
-## 🐳 Docker Setup
+## Limitations
 
-TruthLens also supports **local Docker deployment** for full-stack development and testing with ML models.
+- Verdicts are AI-assisted and can be wrong. Check the cited sources before sharing.
+- The offline judge reads text literally. It misses paraphrases and can't do arithmetic beyond year ranges.
+  Gemini mode is more robust but needs a key and is subject to Google's rate limits and outages; each verdict
+  says which judge ran.
+- Evidence comes from the vault and Wikipedia. If neither covers a topic, the answer is INSUFFICIENT_EVIDENCE.
+- A free-tier Gemini key allows only ~20 requests/day per model. After that the fallback models and then the
+  offline judge answer, and the verdict says so. Use a paid key for real traffic.
+- Offline judging is CPU-heavy (~12 s per claim). Beyond 4 concurrent checks, users get "busy, retry in 30 s".
+- Vercel deployment is not supported in this version (see the Docker doc).
 
-### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) with Linux containers enabled
-
-### Quick Start
-
-```powershell
-# 1. Create your environment file
-Copy-Item .env.example .env
-# Edit .env — add your GEMINI_API_KEY
-
-# 2. Build and start
-docker compose up --build
-
-# 3. Open in browser
-# http://localhost:8000
-```
-
-### Key Commands
-
-| Action | Command |
-|--------|---------|
-| Build & start | `docker compose up --build` |
-| Start detached | `docker compose up -d` |
-| Stop | `docker compose down` |
-| View logs | `docker compose logs -f` |
-| Rebuild clean | `docker compose build --no-cache` |
-| Reset all data | `docker compose down -v` |
-
-### Data Persistence
-
-ChromaDB, SQLite, and user uploads persist across container restarts via named Docker volumes (`truthlens-chroma-data`, `truthlens-sqlite-data`, `truthlens-uploads`).
-
-> **Full documentation:** See [`docs/DOCKER_SETUP.md`](docs/DOCKER_SETUP.md) for architecture details, environment variables, troubleshooting, and Vercel compatibility notes.
-
----
-
-## 📄 License
-This project is licensed under the MIT License &mdash; see the [LICENSE](LICENSE) file for details.
-
----
-<div align="center">
-  <p><i>Truth is not a narrative. It is a verifiable state.</i></p>
-</div>
+## License
+MIT. See [LICENSE](LICENSE).

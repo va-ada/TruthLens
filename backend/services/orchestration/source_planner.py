@@ -1,13 +1,14 @@
 from backend.models.schemas import StructuredClaim
 
-class SourcePlanner:
-    def __init__(self):
-        pass
 
+class SourcePlanner:
     def get_source_strategy(self, claim: StructuredClaim) -> dict:
         """
-        Determines the type of sources that would actually verify this claim.
+        Determines which sources would actually verify this claim, the queries that look for
+        supporting evidence, and the queries that actively look for refuting evidence.
         """
+        # Fall back to the whole claim when no subject could be parsed (avoids queries like "None current role")
+        subject = claim.subject or claim.original_claim
         strategy = {
             "target_domains": [],
             "preferred_source_type": "Primary",
@@ -20,32 +21,33 @@ class SourcePlanner:
 
         if claim.claim_type == "PERSON_ROLE":
             strategy["preferred_source_type"] = "Government / Official"
-            strategy["primary_queries"] = [f"{claim.subject} current role", f"{claim.subject} official profile"]
-            strategy["contradiction_queries"] = [f"{claim.subject} former", f"{claim.subject} replaced", f"{claim.subject} steps down"]
+            role = claim.role or "role"
+            strategy["primary_queries"] = [f"{subject} {role}"]
+            strategy["contradiction_queries"] = [f"{subject} former {role}", f"current {role} {claim.original_claim.split(' of ')[-1]}" if " of " in claim.original_claim else f"{subject} replaced"]
             if claim.currentness_required:
-                strategy["required_freshness_days"] = 30
-                
+                strategy["required_freshness_days"] = 90
+
         elif claim.claim_type == "LOCATION":
             strategy["preferred_source_type"] = "Official Website / Directory"
-            strategy["primary_queries"] = [f"{claim.subject} official address contact"]
+            strategy["primary_queries"] = [f"{subject} location address"]
+            strategy["contradiction_queries"] = [f"{subject} headquarters"]
             strategy["target_domains"] = [".edu", ".gov", ".org"]
-            
+
         elif claim.claim_type == "SCIENTIFIC":
             strategy["preferred_source_type"] = "Peer Reviewed / Medical"
-            strategy["primary_queries"] = [f"{claim.original_claim} study", f"{claim.subject} efficacy research"]
-            
+            strategy["primary_queries"] = [subject]
+            strategy["contradiction_queries"] = [f"{subject} myth misconception"]
+
         elif claim.claim_type == "STATISTICAL":
             strategy["preferred_source_type"] = "Original Publisher / Dataset"
-            strategy["primary_queries"] = [f"{claim.original_claim} report data"]
-            
+            strategy["primary_queries"] = [subject]
+            strategy["contradiction_queries"] = [f"{subject} statistics ranking"]
+
         else:
             strategy["preferred_source_type"] = "Reputable Secondary"
-            strategy["primary_queries"] = [claim.original_claim]
-
-        # Add base query
-        if not strategy["primary_queries"]:
-            strategy["primary_queries"] = [claim.original_claim]
+            strategy["primary_queries"] = [subject]
 
         return strategy
+
 
 source_planner = SourcePlanner()

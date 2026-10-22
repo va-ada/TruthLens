@@ -1,229 +1,269 @@
-import os
 import json
 import re
+import time
+import threading
+import datetime
 import requests
 from typing import List, Dict, Any, Optional
 from backend.config import (
     GEMINI_API_KEY,
+    GEMINI_MODEL,
+    GEMINI_FALLBACK_MODELS,
     GROQ_API_KEY,
+    GROQ_MODEL,
     OPENAI_API_KEY,
+    OPENAI_MODEL,
     OLLAMA_BASE_URL,
-    DEFAULT_LLM_PROVIDER
+    OLLAMA_MODEL,
+    DEFAULT_LLM_PROVIDER,
+    LLM_TIMEOUT_S
 )
-
-import datetime
+from backend import config as app_config
+from backend.database.db import llm_budget_try_consume, llm_budget_used
+from backend.models.schemas import Verdict, normalize_verdict, normalize_credibility
+from backend.services.nlp.nli_evaluator import nli_evaluator, content_words, STANCE_THRESHOLD
+from backend.services.orchestration import verdict_aggregator
 
 SYSTEM_PROMPT = """You are an evidence-based fact verification system.
-Your task is to determine the factual accuracy of a claim using ONLY the provided retrieved evidence, paying extreme attention to TIME CONTEXT.
-Do not use outside knowledge. Do not invent sources or facts.
+Decide whether the claim is true using ONLY the retrieved evidence below. Do not use outside knowledge.
+Do not invent sources or facts. If the evidence does not settle the claim, say so.
 
-CRITICAL INSTRUCTION FOR TEMPORAL REASONING:
-Distinguish historical truth from current truth. If a claim is about the *current* state (e.g., "The current Prime Minister is...", "Today, X is...", or simply "X is the CEO"), evidence that establishes this was true in the past DOES NOT support the claim for the present, unless the evidence itself is highly recent or implies ongoing status.
-If the claim is currently false but was historically true, it is OUTDATED or CONTRADICTED.
-If the claim is explicitly about the past (e.g., "In 2018, X was..."), evaluate it against historical evidence.
-CRITICAL INSTRUCTION FOR ENTITY MATCHING:
-The evidence MUST exactly match the PERSON, ROLE, and COUNTRY/ORGANIZATION mentioned in the claim. If a person's name matches but their role or country is different, return an ENTITY MISMATCH and mark as INSUFFICIENT_EVIDENCE or CONTRADICTED.
+TIME: Compare against the CURRENT REFERENCE DATE. A claim about the present ("X is the CEO", "the current PM")
+is only SUPPORTED by evidence showing it is still true. If evidence shows it was true but no longer is, it is OUTDATED.
+A claim explicitly about the past ("In 2018, X was ...") is judged against historical evidence.
 
-Definitions:
-- SUPPORTED_CURRENT: The evidence confirms the claim is currently true at the reference date.
-- SUPPORTED_HISTORICALLY: The claim is about a past event/status, and evidence confirms it.
-- OUTDATED: The claim states something is currently true, but evidence shows it was only true in the past and has since changed.
-- CONTRADICTED: The evidence clearly contradicts the claim (e.g., wrong person, wrong role, wrong country).
-- INSUFFICIENT_EVIDENCE: The available evidence is not enough to confidently verify the claim, or is too old to verify a current-status claim.
-- AMBIGUOUS_TIME_CONTEXT: The time context of the claim or evidence is too unclear to make a definitive judgment.
+EVIDENCE RELEVANCE: Judge the claim's literal factual content. A theory or model being "superseded" or refined
+does not refute facts the newer understanding still includes. If the evidence is only tangential, answer
+INSUFFICIENT_EVIDENCE rather than REFUTED. Only REFUTE when the evidence states something incompatible with the claim.
 
-Return ONLY a valid JSON object matching this schema:
+ENTITIES: Person, role and country/organisation must all match. A matching name with a different role or country
+does not support the claim.
+
+Verdicts:
+- SUPPORTED: evidence confirms the claim is true now.
+- SUPPORTED_HISTORICALLY: the claim is about the past and evidence confirms it.
+- OUTDATED: the claim states a present fact that evidence shows only held in the past.
+- REFUTED: evidence contradicts the claim.
+- CONFLICTING: credible evidence points both ways.
+- INSUFFICIENT_EVIDENCE: the evidence does not settle the claim.
+
+Return ONLY a JSON object:
 {
-  "verdict": "SUPPORTED_CURRENT" | "SUPPORTED_HISTORICALLY" | "OUTDATED" | "CONTRADICTED" | "INSUFFICIENT_EVIDENCE" | "AMBIGUOUS_TIME_CONTEXT",
-  "confidence_score": <number between 0 and 100, lower it if evidence is stale or dates are missing>,
-  "explanation": "<clear 2-4 sentence explanation. explicitly mention if evidence establishes past vs current status, and verify entity/country match.>",
-  "key_reasoning": "<concise bullet points detailing the logic, evidence connection, temporal alignment, and country/role match>",
+  "verdict": "SUPPORTED" | "SUPPORTED_HISTORICALLY" | "OUTDATED" | "REFUTED" | "CONFLICTING" | "INSUFFICIENT_EVIDENCE",
+  "explanation": "<2-4 sentences: what the evidence says, past vs current, entity/country match>",
+  "key_reasoning": "<short bullet points>",
   "entity_match": "Match" | "Mismatch" | "Unverified",
   "country_match": "Match" | "Mismatch" | "Not Applicable",
   "role_match": "Match" | "Mismatch" | "Not Applicable",
   "temporal_match": "Match" | "Mismatch" | "Unverified" | "Outdated",
   "chunk_classifications": [
-    {
-      "chunk_id": "<id>",
-      "stance": "SUPPORTING" | "CONTRADICTING" | "NEUTRAL",
-      "rationale": "<brief explanation of how this chunk relates to the claim, noting temporal and entity relevance>"
-    }
+    {"chunk_id": "<id>", "stance": "SUPPORTING" | "CONTRADICTING" | "NEUTRAL",
+     "score": <0.0-1.0, how strongly this chunk takes that stance>,
+     "rationale": "<one sentence>"}
   ]
 }
 """
 
+BUDGET_NOTE = "Daily cloud-judge budget reached"
+
+PRESENT_TO_PAST = [(r"\bis\b", "was"), (r"\bare\b", "were"), (r"\bhas\b", "had"), (r"\bhave\b", "had")]
+NOW_WORDS = re.compile(r"\b(the\s+)?(current(ly)?|now|today|presently|incumbent)\b\s*", re.IGNORECASE)
+
+
+def to_past_tense(claim: str) -> str:
+    """'Shinzo Abe is the current PM of Japan' -> 'Shinzo Abe was the PM of Japan' (for the OUTDATED check)."""
+    text = NOW_WORDS.sub(lambda m: m.group(1) or "", claim)  # keep "The"/"the" as written
+    for pattern, past in PRESENT_TO_PAST:
+        new = re.sub(pattern, past, text, count=1, flags=re.IGNORECASE)
+        if new != text:
+            return re.sub(r"\s+", " ", new).strip()
+    return re.sub(r"\s+", " ", text).strip()
+
 
 class LLMService:
-    def evaluate_claim(self, claim: str, evidence_text: str) -> Dict[str, Any]:
-        """Convenience method to evaluate a claim against raw evidence text."""
-        fake_chunks = [{
-            "chunk_id": "c1",
-            "text": evidence_text,
-            "source": "Live Verified Evidence",
-            "source_type": "Live Web / Intelligence"
-        }]
-        return self.verify_with_llm(claim, fake_chunks)
-
     def verify_with_llm(
         self,
         claim: str,
         evidence_chunks: List[Dict[str, Any]],
         provider: str = "auto",
-        custom_api_key: Optional[str] = None
+        custom_api_key: Optional[str] = None,
+        historical: bool = False,
+        changes_over_time: bool = False
     ) -> Dict[str, Any]:
         """
-        Orchestrates LLM inference with automated provider selection and fallback.
+        Judges the claim against the evidence. Tries the requested/configured cloud LLM(s) in order,
+        then falls back to the offline NLI judge. Every result carries per-chunk stances.
         """
         if not evidence_chunks:
             return self._insufficient_evidence_response(
-                claim,
-                reason="No relevant documents or evidence chunks could be found in the knowledge base."
+                claim, reason="No relevant documents or evidence chunks could be found."
             )
 
-        # Determine effective provider
-        effective_provider = provider if provider != "auto" else DEFAULT_LLM_PROVIDER
-        if effective_provider == "auto":
-            if custom_api_key:
-                effective_provider = "custom"
-            elif GEMINI_API_KEY:
-                effective_provider = "gemini"
-            elif GROQ_API_KEY:
-                effective_provider = "groq"
-            elif OPENAI_API_KEY:
-                effective_provider = "openai"
+        requested = (provider or "auto").lower()
+        if requested == "auto":
+            requested = (DEFAULT_LLM_PROVIDER or "auto").lower()
+
+        attempts = []
+        if custom_api_key:
+            if custom_api_key.startswith("gsk_"):
+                attempts.append(("groq", custom_api_key))
+            elif custom_api_key.startswith("sk-"):
+                attempts.append(("openai", custom_api_key))
             else:
-                effective_provider = "offline"
+                attempts.append(("gemini", custom_api_key))
+        if requested in ("auto", "gemini") and GEMINI_API_KEY:
+            attempts.append(("gemini", GEMINI_API_KEY))
+        if requested in ("auto", "groq") and GROQ_API_KEY:
+            attempts.append(("groq", GROQ_API_KEY))
+        if requested in ("auto", "openai") and OPENAI_API_KEY:
+            attempts.append(("openai", OPENAI_API_KEY))
+        if requested == "ollama":
+            attempts.append(("ollama", None))
 
-        # Try designated provider
-        if effective_provider in ["gemini", "custom"] and (custom_api_key or GEMINI_API_KEY):
-            key = custom_api_key or GEMINI_API_KEY
-            res = self._call_gemini(claim, evidence_chunks, key)
+        callers = {"gemini": self._call_gemini, "groq": self._call_groq, "openai": self._call_openai}
+        labels = {"gemini": f"Google Gemini ({GEMINI_MODEL})", "groq": f"Groq ({GROQ_MODEL})",
+                  "openai": f"OpenAI ({OPENAI_MODEL})", "ollama": f"Ollama ({OLLAMA_MODEL})"}
+        errors: List[str] = []
+        # Process-wide daily cap on cloud calls (cost / free-tier protection); local Ollama is not counted
+        cloud = [a for a in attempts if a[0] != "ollama"]
+        if cloud and self._budget_exhausted():
+            attempts = [a for a in attempts if a[0] == "ollama"]
+            errors.append(BUDGET_NOTE)
+        for name, key in attempts:
+            res = self._call_ollama(claim, evidence_chunks) if name == "ollama" else callers[name](claim, evidence_chunks, key, errors)
             if res:
-                res["llm_provider_used"] = "Google Gemini"
+                res.setdefault("llm_provider_used", labels[name])
                 return res
 
-        if effective_provider == "groq" or (custom_api_key and "gsk_" in custom_api_key):
-            key = custom_api_key if (custom_api_key and "gsk_" in custom_api_key) else GROQ_API_KEY
-            res = self._call_groq(claim, evidence_chunks, key)
-            if res:
-                res["llm_provider_used"] = "Groq (Llama-3.3)"
-                return res
-
-        if effective_provider == "openai" or (custom_api_key and "sk-" in custom_api_key):
-            key = custom_api_key if (custom_api_key and "sk-" in custom_api_key) else OPENAI_API_KEY
-            res = self._call_openai(claim, evidence_chunks, key)
-            if res:
-                res["llm_provider_used"] = "OpenAI GPT"
-                return res
-
-        if effective_provider == "ollama":
-            res = self._call_ollama(claim, evidence_chunks)
-            if res:
-                res["llm_provider_used"] = "Ollama Local LLM"
-                return res
-
-        # High-Fidelity Built-in Deterministic NLI Engine (Guaranteed zero-dependency fallback)
-        res = self._offline_nli_verify(claim, evidence_chunks)
-        res["llm_provider_used"] = "Offline Natural Language Inference Engine"
+        res = self._offline_verify(claim, evidence_chunks, historical=historical, changes_over_time=changes_over_time)
+        if BUDGET_NOTE in errors:
+            res["judge_notes"] = [f"{BUDGET_NOTE}; used the offline judge."]
+        elif attempts:
+            # Say so when a configured cloud judge was skipped, instead of silently changing judges
+            res["judge_notes"] = [f"Cloud judge unavailable ({'; '.join(dict.fromkeys(errors)) or 'no response'}); used the offline judge instead."]
         return res
 
-    def _call_gemini(self, claim: str, chunks: List[Dict[str, Any]], api_key: str) -> Optional[Dict[str, Any]]:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-            prompt = self._build_prompt(claim, chunks)
-            payload = {
-                "contents": [
-                    {"role": "user", "parts": [{"text": f"{SYSTEM_PROMPT}\n\n{prompt}"}]}
-                ],
-                "generationConfig": {
-                    "temperature": 0.1,
-                    "responseMimeType": "application/json"
-                }
-            }
-            resp = requests.post(url, json=payload, timeout=20)
+    @staticmethod
+    def _budget_exhausted() -> bool:
+        limit = int(app_config.LLM_DAILY_BUDGET)
+        return limit > 0 and llm_budget_used() >= limit
+
+    # ------------------------------------------------------------------ cloud / local LLM calls
+
+    # Transient server errors are retried once; 429 (rate limit) is not - waiting seconds rarely clears a
+    # per-minute quota, so moving straight to the next model is faster
+    RETRYABLE = {500, 502, 503, 504}
+
+    # A model that answers 429 (quota or rate limit) is skipped for a while instead of being tried first on
+    # every request: with a 20-requests/day free tier, each later claim otherwise paid an extra failing call.
+    RATE_LIMIT_COOLDOWN_S = 600.0
+    _cooldown_until: Dict[str, float] = {}
+    _cooldown_lock = threading.Lock()
+
+    def _cooling_down(self, name: str) -> bool:
+        with self._cooldown_lock:
+            return time.monotonic() < self._cooldown_until.get(name, 0.0)
+
+    def _start_cooldown(self, name: str) -> None:
+        with self._cooldown_lock:
+            self._cooldown_until[name] = time.monotonic() + self.RATE_LIMIT_COOLDOWN_S
+
+    def _post_with_retry(self, url: str, headers: dict, payload: dict, name: str, errors: list):
+        """POST with one retry on transient server errors (2s backoff). Returns the response or None."""
+        if self._cooling_down(name):
+            errors.append(f"{name}: skipped (rate-limited recently)")
+            return None
+        for delay in (0, 2.0):
+            if delay:
+                time.sleep(delay)
+            if not llm_budget_try_consume(int(app_config.LLM_DAILY_BUDGET)):
+                errors.append(BUDGET_NOTE)
+                return None
+            try:
+                resp = requests.post(url, headers=headers, json=payload, timeout=LLM_TIMEOUT_S)
+            except Exception as e:
+                errors.append(f"{name}: {type(e).__name__}")
+                continue
             if resp.status_code == 200:
-                data = resp.json()
-                text = data["candidates"][0]["content"]["parts"][0]["text"]
-                return self._parse_json_response(text, claim, chunks)
-            else:
-                # Fallback to gemini-1.5-flash
-                url_fallback = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-                resp2 = requests.post(url_fallback, json=payload, timeout=20)
-                if resp2.status_code == 200:
-                    data = resp2.json()
-                    text = data["candidates"][0]["content"]["parts"][0]["text"]
-                    return self._parse_json_response(text, claim, chunks)
-        except Exception as e:
-            print(f"[LLMService] Gemini call failed: {e}")
+                return resp
+            errors.append(f"{name}: HTTP {resp.status_code}")
+            print(f"[LLMService] {name} returned HTTP {resp.status_code}: {resp.text[:160]}")
+            if resp.status_code == 429:
+                self._start_cooldown(name)
+            if resp.status_code not in self.RETRYABLE:
+                return None
         return None
 
-    def _call_groq(self, claim: str, chunks: List[Dict[str, Any]], api_key: str) -> Optional[Dict[str, Any]]:
-        try:
-            url = "https://api.groq.com/openai/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            prompt = self._build_prompt(claim, chunks)
-            payload = {
-                "model": "llama-3.3-70b-versatile",
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.1,
-                "response_format": {"type": "json_object"}
-            }
-            resp = requests.post(url, headers=headers, json=payload, timeout=20)
-            if resp.status_code == 200:
-                data = resp.json()
-                text = data["choices"][0]["message"]["content"]
-                return self._parse_json_response(text, claim, chunks)
-        except Exception as e:
-            print(f"[LLMService] Groq call failed: {e}")
+    def _call_gemini(self, claim: str, chunks: List[Dict[str, Any]], api_key: str, errors: Optional[list] = None) -> Optional[Dict[str, Any]]:
+        errors = errors if errors is not None else []
+        headers = {"x-goog-api-key": api_key, "Content-Type": "application/json"}
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": f"{SYSTEM_PROMPT}\n\n{self._build_prompt(claim, chunks)}"}]}],
+            "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"}
+        }
+        # Primary model, then fallbacks (Gemini models get overloaded or retired)
+        for model in [GEMINI_MODEL] + [m for m in GEMINI_FALLBACK_MODELS if m != GEMINI_MODEL]:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            resp = self._post_with_retry(url, headers, payload, f"Gemini {model}", errors)
+            if resp is None:
+                continue
+            try:
+                text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+            except (KeyError, IndexError, ValueError):
+                errors.append(f"Gemini {model}: empty/blocked response")
+                continue
+            result = self._parse_json_response(text, chunks)
+            if result:
+                result["llm_provider_used"] = f"Google Gemini ({model})"
+                return result
+            errors.append(f"Gemini {model}: unparseable JSON")
         return None
 
-    def _call_openai(self, claim: str, chunks: List[Dict[str, Any]], api_key: str) -> Optional[Dict[str, Any]]:
+    def _call_openai_compatible(self, url: str, model: str, api_key: str, claim: str, chunks: List[Dict[str, Any]], name: str, errors: Optional[list] = None) -> Optional[Dict[str, Any]]:
+        errors = errors if errors is not None else []
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": self._build_prompt(claim, chunks)}
+            ],
+            "temperature": 0.1,
+            "response_format": {"type": "json_object"}
+        }
+        resp = self._post_with_retry(url, headers, payload, name, errors)
+        if resp is None:
+            return None
         try:
-            url = "https://api.openai.com/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            prompt = self._build_prompt(claim, chunks)
-            payload = {
-                "model": "gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.1,
-                "response_format": {"type": "json_object"}
-            }
-            resp = requests.post(url, headers=headers, json=payload, timeout=20)
-            if resp.status_code == 200:
-                data = resp.json()
-                text = data["choices"][0]["message"]["content"]
-                return self._parse_json_response(text, claim, chunks)
-        except Exception as e:
-            print(f"[LLMService] OpenAI call failed: {e}")
-        return None
+            return self._parse_json_response(resp.json()["choices"][0]["message"]["content"], chunks)
+        except (KeyError, IndexError, ValueError):
+            errors.append(f"{name}: malformed response")
+            return None
+
+    def _call_groq(self, claim, chunks, api_key, errors=None):
+        return self._call_openai_compatible("https://api.groq.com/openai/v1/chat/completions", GROQ_MODEL, api_key, claim, chunks, "Groq", errors)
+
+    def _call_openai(self, claim, chunks, api_key, errors=None):
+        return self._call_openai_compatible("https://api.openai.com/v1/chat/completions", OPENAI_MODEL, api_key, claim, chunks, "OpenAI", errors)
 
     def _call_ollama(self, claim: str, chunks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         try:
-            url = f"{OLLAMA_BASE_URL}/api/generate"
-            prompt = f"{SYSTEM_PROMPT}\n\n{self._build_prompt(claim, chunks)}"
             payload = {
-                "model": "llama3",
-                "prompt": prompt,
+                "model": OLLAMA_MODEL,
+                "prompt": f"{SYSTEM_PROMPT}\n\n{self._build_prompt(claim, chunks)}",
                 "stream": False,
                 "format": "json"
             }
-            resp = requests.post(url, json=payload, timeout=30)
+            resp = requests.post(f"{OLLAMA_BASE_URL}/api/generate", json=payload, timeout=60)
             if resp.status_code == 200:
-                data = resp.json()
-                return self._parse_json_response(data.get("response", ""), claim, chunks)
+                return self._parse_json_response(resp.json().get("response", ""), chunks)
         except Exception as e:
             print(f"[LLMService] Ollama call failed: {e}")
         return None
 
     def _build_prompt(self, claim: str, chunks: List[Dict[str, Any]]) -> str:
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        prompt = f"CURRENT REFERENCE DATE AND TIME: {current_time}\n\nCLAIM TO VERIFY:\n\"{claim}\"\n\nRETRIEVED EVIDENCE CHUNKS:\n"
+        current_time = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        prompt = f"CURRENT REFERENCE DATE: {current_time}\n\nCLAIM TO VERIFY:\n\"{claim}\"\n\nRETRIEVED EVIDENCE CHUNKS:\n"
         for i, c in enumerate(chunks, 1):
             prompt += f"\n--- Evidence Chunk {i} [ID: {c.get('chunk_id', 'unknown')}] ---\n"
             prompt += f"Source: {c.get('source', 'Unknown')}\n"
@@ -232,439 +272,163 @@ class LLMService:
             if c.get("retrieval_date"):
                 prompt += f"Retrieval Date: {c['retrieval_date']}\n"
             prompt += f"Text:\n{c.get('text', '')}\n"
-        prompt += "\nEvaluate whether the evidence strictly SUPPORTS (currently or historically), is OUTDATED, CONTRADICTS, offers INSUFFICIENT EVIDENCE, or has an AMBIGUOUS TIME CONTEXT."
         return prompt
 
-    def _parse_json_response(self, text: str, claim: str, chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _parse_json_response(self, text: str, chunks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Parses an LLM JSON verdict. Returns None (so the next judge is tried) if it is unusable."""
         try:
-            # Clean markdown codeblocks if present
             cleaned = text.strip()
             if cleaned.startswith("```"):
                 cleaned = re.sub(r"^```(?:json)?\n", "", cleaned)
                 cleaned = re.sub(r"\n```$", "", cleaned)
             data = json.loads(cleaned)
-
-            verdict = data.get("verdict", "").strip().upper()
-            
-            # Map legacy verdicts to new model if generated by fallback models
-            if verdict == "SUPPORTED":
-                verdict = "SUPPORTED_CURRENT"
-            elif verdict == "REFUTED":
-                verdict = "CONTRADICTED"
-            elif verdict == "MISLEADING" or verdict == "INSUFFICIENT EVIDENCE":
-                verdict = "INSUFFICIENT_EVIDENCE"
-                
-            valid_verdicts = [
-                "SUPPORTED_CURRENT", "SUPPORTED_HISTORICALLY", "OUTDATED", 
-                "CONTRADICTED", "INSUFFICIENT_EVIDENCE", "AMBIGUOUS_TIME_CONTEXT"
-            ]
-            if verdict not in valid_verdicts:
-                verdict = "INSUFFICIENT_EVIDENCE"
-
-            confidence = float(data.get("confidence_score", 75.0))
-            confidence = max(0.0, min(100.0, confidence))
-
-            return {
-                "verdict": verdict,
-                "confidence_score": round(confidence, 1),
-                "explanation": data.get("explanation", "Evidence verification complete."),
-                "key_reasoning": data.get("key_reasoning", ""),
-                "entity_match": data.get("entity_match", "Unverified"),
-                "country_match": data.get("country_match", "Not Applicable"),
-                "role_match": data.get("role_match", "Not Applicable"),
-                "temporal_match": data.get("temporal_match", "Unverified"),
-                "chunk_classifications": data.get("chunk_classifications", [])
-            }
         except Exception as e:
             print(f"[LLMService] Failed to parse JSON response ({e}): {text[:200]}")
-            return self._offline_nli_verify(claim, chunks)
+            return None
 
-    def _offline_nli_verify(self, claim: str, chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Deterministic, Explainable Natural Language Inference & Evidence Stance Classifier.
-        Analyzes subject entity, predicate role, numerical alignment, polarity, and semantic overlap.
-        """
-        claim_lower = claim.lower()
-        
-        # --- ACADEMIC DEMONSTRATION FALLBACK CACHE ---
-        # Ensures robust offline handling for complex semantic demonstration claims when LLM API keys are unavailable on Vercel.
-        demo_overrides = {
-            "the galaxy of earth is called earth": {
-                "verdict": "CONTRADICTED",
-                "confidence_score": 99.5,
-                "explanation": "The claim is refuted. Earth is a planetary body, not a galaxy. The galaxy containing Earth is called the Milky Way.",
-                "key_reasoning": "Direct contradiction of astrophysical taxonomy.",
-                "llm_provider_used": "Offline Natural Language Inference Engine (Demo Cache)"
-            },
-            "the neighbouring galaxy is called earth": {
-                "verdict": "CONTRADICTED",
-                "confidence_score": 99.5,
-                "explanation": "The claim is refuted. Earth is a planetary body, not a galaxy. The neighboring galaxy to the Milky Way is Andromeda.",
-                "key_reasoning": "Direct contradiction of astrophysical taxonomy.",
-                "llm_provider_used": "Offline Natural Language Inference Engine (Demo Cache)"
-            },
-            "the galaxy of earth is called milky way": {
-                "verdict": "SUPPORTED_CURRENT",
-                "confidence_score": 98.2,
-                "explanation": "The claim is supported. The Milky Way is the galaxy that contains our Solar System and Earth.",
-                "key_reasoning": "High semantic overlap with established astrophysical facts.",
-                "llm_provider_used": "Offline Natural Language Inference Engine (Demo Cache)"
-            },
-            "the galaxy of earth is named the milky way": {
-                "verdict": "SUPPORTED_CURRENT",
-                "confidence_score": 98.2,
-                "explanation": "The claim is supported. The Milky Way is the galaxy that contains our Solar System and Earth.",
-                "key_reasoning": "High semantic overlap with established astrophysical facts.",
-                "llm_provider_used": "Offline Natural Language Inference Engine (Demo Cache)"
-            }
-        }
-        
-        for demo_claim, override_result in demo_overrides.items():
-            if demo_claim in claim_lower or claim_lower in demo_claim:
-                res = dict(override_result)
-                res["chunk_classifications"] = []
-                res["supporting_chunks"] = chunks[:1] if res["verdict"] == "SUPPORTED" else []
-                res["contradicting_chunks"] = chunks[:1] if res["verdict"] == "REFUTED" else []
-                res["neutral_chunks"] = chunks[1:] if len(chunks) > 1 else []
-                return res
-
-        stopwords = {
-            "the", "a", "an", "and", "or", "in", "on", "at", "to", "for",
-            "is", "are", "was", "were", "of", "with", "by", "that", "this",
-            "it", "as", "from", "be", "has", "have", "had", "its", "will",
-            "been", "into", "than", "then", "more", "most", "also", "year",
-            "what", "who", "when", "where", "why", "how", "does", "did", "do"
-        }
-        all_claim_words = re.findall(r"\b[a-zA-Z0-9]{2,}\b", claim_lower)
-        claim_content_words = set(w for w in all_claim_words if w not in stopwords)
-        if not claim_content_words:
-            claim_content_words = set(all_claim_words)
-        
-        # 1. Dissect Claim into Subject Entity vs Predicate/Role
-        subject_tokens = set()
-        role_predicate_tokens = set()
-        
-        match = re.split(r"\b(?:is|are|was|were|became|serves\s+as|holds|became\s+the|serves|can|cannot|could)\b", claim_lower, maxsplit=1)
-        if len(match) == 2:
-            subj_part, pred_part = match[0].strip(), match[1].strip()
-            subj_words = [w for w in re.findall(r"\b[a-zA-Z0-9]{2,}\b", subj_part) if w not in stopwords]
-            pred_words = [w for w in re.findall(r"\b[a-zA-Z0-9]{2,}\b", pred_part) if w not in stopwords]
-            if subj_words:
-                subject_tokens = set(subj_words)
-            if pred_words:
-                role_predicate_tokens = set(pred_words)
-        
-        is_unique_role_claim = bool(re.search(r"\b(?:pm|prime\s+minister|president\s+of|chancellor\s+of|king\s+of|queen\s+of|monarch|head\s+of\s+state|capital\s+of|ceo\s+of|founder\s+of|governor\s+of)\b", claim_lower))
-        
-        # Detect numbers, ranks, and negations
-        numbers_in_claim = re.findall(r"\b\d+(?:\.\d+)?\b", claim_lower)
-        rank_terms = re.findall(r"\b(?:first|second|third|fourth|fifth|1st|2nd|3rd|4th|5th|largest|smallest|highest|lowest)\b", claim_lower)
-        negation_markers = {"not", "never", "cannot", "failed", "untrue", "false", "disproved", "refuted", "inaccurate", "incorrect"}
-        has_claim_negation = any(w in all_claim_words for w in negation_markers)
-        has_over_modifier = bool(re.search(r"\b(?:over|more\s+than|at\s+least|exceed|above)\b", claim_lower))
-        has_under_modifier = bool(re.search(r"\b(?:under|less\s+than|below|fewer\s+than)\b", claim_lower))
-        has_viral_claim = any(v in claim_lower for v in ["viral", "virus", "cold", "flu"])
-
-        explicit_refutation_phrases = [
-            "zero biological activity", "cannot treat", "cannot cure", "ineffective", 
-            "has not overtaken", "not overtake", "not become", "remains in fifth", 
-            "contraindicated", "no biological activity", "zero activity", "not effective",
-            "not cure", "myth", "hoax", "proverb", "fable", "misconception", "falsehood",
-            "conspiracy theory", "satire", "fictional", "joke", "urban legend",
-            "disproved", "debunked", "untrue", "fake news", "not true", "false"
-        ]
-
-        total_claim_kw = len(claim_content_words)
-        supporting_chunks = []
-        contradicting_chunks = []
-        neutral_chunks = []
-        chunk_classifications = []
-
-        for chunk in chunks:
-            text = chunk.get("text", "")
-            text_lower = text.lower()
-            all_text_words = set(re.findall(r"\b[a-zA-Z0-9]{2,}\b", text_lower))
-            text_content_words = set(w for w in all_text_words if w not in stopwords)
-            
-            matched_keywords = claim_content_words.intersection(text_content_words)
-            overlap_count = len(matched_keywords)
-            overlap = overlap_count / max(1, total_claim_kw)
-            
-            text_numbers = re.findall(r"\b\d+(?:\.\d+)?\b", text_lower)
-            text_ranks = re.findall(r"\b(?:first|second|third|fourth|fifth|1st|2nd|3rd|4th|5th|largest|smallest|highest|lowest)\b", text_lower)
-            chunk_negation = any(w in all_text_words for w in negation_markers)
-            chunk_has_explicit_refutation = any(p in text_lower for p in explicit_refutation_phrases)
-
-            subject_matched = bool(subject_tokens) and len(subject_tokens.intersection(text_content_words)) >= len(subject_tokens) * 0.7
-            subject_completely_absent = bool(subject_tokens) and len(subject_tokens.intersection(text_content_words)) == 0
-            predicate_matched = bool(role_predicate_tokens) and len(role_predicate_tokens.intersection(text_content_words)) >= max(1, len(role_predicate_tokens) * 0.4)
-            full_predicate_matched = bool(role_predicate_tokens) and len(role_predicate_tokens.intersection(text_content_words)) >= len(role_predicate_tokens) * 0.75
-
-            stance = "NEUTRAL"
-            rationale = "Provides background context but lacks decisive corroboration details."
-
-            # Case 1: Sole-Office / Unique-Role Conflict (e.g. Trump is PM of India -> Chunk says Modi is PM of India)
-            # Requires full office and country/entity match in the evidence text
-            if is_unique_role_claim and subject_completely_absent and full_predicate_matched and overlap >= 0.40:
-                stance = "CONTRADICTING"
-                rationale = "Authoritative evidence identifies a different entity holding this exact office/role, contradicting the asserted subject."
-                contradicting_chunks.append(chunk)
-            
-            # Case 2: Explicit scientific/factual refutation
-            elif chunk_has_explicit_refutation and overlap >= 0.35:
-                stance = "CONTRADICTING"
-                rationale = "Directly and explicitly refutes the factual premise asserted in the claim."
-                contradicting_chunks.append(chunk)
-            
-            # Case 3: Subject entity is absent from this chunk -> CANNOT support the claim
-            elif subject_tokens and subject_completely_absent:
-                stance = "NEUTRAL"
-                rationale = "Discusses related terminology but does not reference the primary subject of the claim."
-                neutral_chunks.append(chunk)
-            
-            # Case 4: Subject entity present with role/predicate alignment
-            elif subject_tokens and role_predicate_tokens:
-                if subject_matched and predicate_matched:
-                    if rank_terms and text_ranks and not any(r in text_ranks for r in rank_terms):
-                        stance = "CONTRADICTING"
-                        rationale = f"Cites conflicting ranking ({', '.join(text_ranks)}) contradictory to the claim ({', '.join(rank_terms)})."
-                        contradicting_chunks.append(chunk)
-                    elif has_viral_claim and "virus" not in text_lower and "viral" not in text_lower and "cold" not in text_lower:
-                        stance = "NEUTRAL"
-                        rationale = "Discusses bacterial infections, which does not confirm effectiveness against viral infections."
-                        neutral_chunks.append(chunk)
-                    elif numbers_in_claim and text_numbers and len(numbers_in_claim) > 0:
-                        num_verdict = self._check_numerical_alignment(
-                            numbers_in_claim, text_numbers, 
-                            has_over_modifier, has_under_modifier,
-                            claim_lower, text_lower
-                        )
-                        if num_verdict == "SUPPORTING":
-                            stance = "SUPPORTING"
-                            rationale = "Numerical evidence in this source confirms the claim values."
-                            supporting_chunks.append(chunk)
-                        elif num_verdict == "CONTRADICTING":
-                            stance = "CONTRADICTING"
-                            rationale = "Factual metrics in this source contradict those in the claim."
-                            contradicting_chunks.append(chunk)
-                        else:
-                            stance = "NEUTRAL"
-                            neutral_chunks.append(chunk)
-
-                    else:
-                        # Approximate proximity check to avoid false positives (e.g. subject and predicate in same paragraph but unrelated)
-                        try:
-                            subj_str = list(subject_tokens)[0]
-                            pred_str = list(role_predicate_tokens)[0]
-                            idx_subj = text_lower.find(subj_str)
-                            idx_pred = text_lower.find(pred_str)
-                            if idx_subj != -1 and idx_pred != -1 and abs(idx_subj - idx_pred) > 60:
-                                stance = "NEUTRAL"
-                                rationale = "The subject and predicate are mentioned, but too far apart to confirm a direct relation."
-                                neutral_chunks.append(chunk)
-                                continue
-                        except Exception:
-                            pass
-                        stance = "SUPPORTING"
-                        rationale = "Directly corroborates both the subject and the asserted role/action."
-                        supporting_chunks.append(chunk)
-                else:
-                    stance = "NEUTRAL"
-                    rationale = "Mentions the subject or predicate in an unrelated context without confirming the complete relational assertion."
-                    neutral_chunks.append(chunk)
-            
-            # Case 4.5: Country or Entity mismatch in high-overlap text
-            elif is_unique_role_claim and overlap >= 0.30 and not predicate_matched:
-                stance = "CONTRADICTING"
-                rationale = "Text discusses the topic but role/entity facts conflict with the unique role asserted."
-                contradicting_chunks.append(chunk)
-
-            # Case 5: Non-relational general claims
-            elif overlap >= 0.30:
-                if has_viral_claim and "virus" not in text_lower and "viral" not in text_lower and "cold" not in text_lower:
-                    stance = "NEUTRAL"
-                    rationale = "Discusses bacterial infections, which does not confirm effectiveness against viral infections."
-                    neutral_chunks.append(chunk)
-                elif rank_terms and text_ranks and not any(r in text_ranks for r in rank_terms):
-                    stance = "CONTRADICTING"
-                    rationale = f"Cites conflicting ranking ({', '.join(text_ranks)}) contradictory to the claim ({', '.join(rank_terms)})."
-                    contradicting_chunks.append(chunk)
-                elif numbers_in_claim and text_numbers and len(numbers_in_claim) > 0:
-                    num_verdict = self._check_numerical_alignment(
-                        numbers_in_claim, text_numbers, 
-                        has_over_modifier, has_under_modifier,
-                        claim_lower, text_lower
-                    )
-                    if num_verdict == "SUPPORTING":
-                        stance = "SUPPORTING"
-                        rationale = "Numerical evidence in this source confirms or is consistent with the values stated in the claim."
-                        supporting_chunks.append(chunk)
-                    elif num_verdict == "CONTRADICTING":
-                        stance = "CONTRADICTING"
-                        rationale = "Factual metrics in this source contradict those in the claim."
-                        contradicting_chunks.append(chunk)
-                    else:
-                        stance = "NEUTRAL"
-                        neutral_chunks.append(chunk)
-                elif chunk_negation and not has_claim_negation and self._negation_is_claim_relevant(claim_content_words, text_lower, negation_markers):
-                    stance = "CONTRADICTING"
-                    rationale = "Presents opposing polarity or negation relative to the claim assertion."
-                    contradicting_chunks.append(chunk)
-                else:
-                    stance = "SUPPORTING"
-                    rationale = "Directly corroborates the assertions made in the claim with matching factual data."
-                    supporting_chunks.append(chunk)
-            else:
-                stance = "NEUTRAL"
-                rationale = "Provides background context but lacks decisive corroboration details."
-                neutral_chunks.append(chunk)
-
-            chunk_classifications.append({
-                "chunk_id": chunk.get("chunk_id", ""),
+        known_ids = {str(c.get("chunk_id")) for c in chunks}
+        classifications = []
+        for cls in data.get("chunk_classifications", []) or []:
+            if str(cls.get("chunk_id")) not in known_ids:
+                continue  # ignore chunk ids the model invented
+            stance = str(cls.get("stance", "NEUTRAL")).upper()
+            stance = stance if stance in ("SUPPORTING", "CONTRADICTING") else "NEUTRAL"
+            try:
+                score = max(0.0, min(1.0, float(cls.get("score", 0.75))))
+            except (TypeError, ValueError):
+                score = 0.75
+            classifications.append({
+                "chunk_id": str(cls.get("chunk_id")),
                 "stance": stance,
-                "rationale": rationale
+                "score": score,
+                "rationale": cls.get("rationale", "")
             })
 
-        # Calculate final verdict
-        top_relevance = max([c.get("relevance_score", 0.0) for c in chunks]) if chunks else 0.0
-
-        def calc_confidence(chunk_list, base_score):
-            if not chunk_list: return base_score
-            avg_rel = sum(c.get("relevance_score", 50.0) for c in chunk_list) / len(chunk_list) / 100.0
-            avg_cred = sum(c.get("credibility_score", 50.0) for c in chunk_list) / len(chunk_list) / 100.0
-            
-            # Since offline NLI has no probability, use base_score + evidence strength
-            strength = (avg_rel * 4.0) + (avg_cred * 6.0)
-            boost = (len(chunk_list) - 1) * 2.0
-            return min(98.5, base_score + strength + boost)
-
-        if not supporting_chunks and not contradicting_chunks:
-            verdict = "INSUFFICIENT_EVIDENCE"
-            confidence = 35.0
-            explanation = "The available trusted knowledge vault does not contain sufficiently detailed evidence or direct factual reports to verify or refute this assertion."
-            key_reasoning = "Retrieved excerpts provide contextual information but lack direct confirmation or counter-evidence for the specific claim entities."
-        elif len(contradicting_chunks) > 0 and len(supporting_chunks) == 0:
-            verdict = "CONTRADICTED"
-            confidence = calc_confidence(contradicting_chunks, 75.0)
-            explanation = "The claim is refuted by authoritative documentation in the knowledge vault. Retrieved evidence directly contradicts the factual assertion."
-            key_reasoning = f"Identified {len(contradicting_chunks)} authoritative evidence chunk(s) detailing explicit counter-evidence and contradictory findings."
-        elif len(supporting_chunks) > 0 and len(contradicting_chunks) == 0:
-            is_current = "current" in claim_lower or "today" in claim_lower or "now" in claim_lower
-            if is_current:
-                verdict = "AMBIGUOUS_TIME_CONTEXT"
-                confidence = calc_confidence(supporting_chunks, 60.0)
-                explanation = "The claim may have been historically true, but current evidence freshness cannot be offline-verified."
-                key_reasoning = "Offline NLP engine cannot independently verify real-time temporal freshness for current-status claims."
-            else:
-                verdict = "SUPPORTED_HISTORICALLY" if "was " in claim_lower or "in 20" in claim_lower else "SUPPORTED_CURRENT"
-                confidence = calc_confidence(supporting_chunks, 72.0)
-                explanation = "The claim is supported by credible evidence in the knowledge vault, with matching factual assertions and authoritative data points."
-                key_reasoning = f"Corroborated by {len(supporting_chunks)} retrieved source chunk(s) confirming the entities and core factual premises."
-        elif len(supporting_chunks) > 0 and len(contradicting_chunks) > 0:
-            verdict = "AMBIGUOUS_TIME_CONTEXT"
-            confidence = calc_confidence(supporting_chunks + contradicting_chunks, 65.0)
-            explanation = "The claim is misleading, partially true, or conflates timelines. While portions of the statement are based on factual truths, it conflates metrics or timelines."
-            key_reasoning = f"Discovered both corroborating ({len(supporting_chunks)}) and contradicting ({len(contradicting_chunks)}) data points across trusted sources, indicating selective representation or outdated facts."
-        else:
-            verdict = "INSUFFICIENT_EVIDENCE"
-            confidence = 42.0
-            explanation = "While some retrieved documents discuss the general subject matter, there is insufficient specific evidence to decisively support or refute the assertion."
-            key_reasoning = "Retrieved excerpts provide contextual information but omit direct confirmation of the specific factual claim."
-
         return {
-            "verdict": verdict,
-            "confidence_score": round(confidence, 1),
-            "explanation": explanation,
-            "key_reasoning": key_reasoning,
-            "entity_match": "Match" if subject_matched else ("Mismatch" if subject_completely_absent else "Unverified"),
-            "country_match": "Not Applicable",
-            "role_match": "Match" if predicate_matched else "Mismatch",
-            "temporal_match": "Unverified",
-            "chunk_classifications": chunk_classifications
+            "verdict": normalize_verdict(data.get("verdict")),
+            "explanation": data.get("explanation", ""),
+            "key_reasoning": data.get("key_reasoning", ""),
+            "entity_match": data.get("entity_match", "Unverified"),
+            "country_match": data.get("country_match", "Not Applicable"),
+            "role_match": data.get("role_match", "Not Applicable"),
+            "temporal_match": data.get("temporal_match", "Unverified"),
+            "chunk_classifications": classifications
         }
 
-    def _check_numerical_alignment(
-        self, claim_nums: list, text_nums: list,
-        has_over: bool, has_under: bool,
-        claim_text: str, evidence_text: str
-    ) -> str:
-        """
-        Smart numerical comparison that understands comparative modifiers.
-        Returns 'SUPPORTING', 'CONTRADICTING', or 'NEUTRAL'.
-        """
-        # Direct number match — always supporting
-        if set(claim_nums).intersection(set(text_nums)):
-            return "SUPPORTING"
-        
-        # If claim says "over X" or "more than X", check if evidence numbers exceed X
-        if has_over and claim_nums:
-            try:
-                claim_val = float(claim_nums[0])
-                evidence_vals = [float(n) for n in text_nums if n != claim_nums[0]]
-                # Look for evidence numbers that are close to and above the claim threshold
-                for ev in evidence_vals:
-                    # Evidence value is above the claimed threshold and within a reasonable range
-                    if ev > claim_val and ev < claim_val * 5:
-                        return "SUPPORTING"
-                    # Evidence value is below the claimed threshold — potential contradiction
-                    if ev < claim_val and ev > claim_val * 0.5 and abs(ev - claim_val) / max(claim_val, 1) > 0.1:
-                        return "CONTRADICTING"
-            except (ValueError, IndexError):
-                pass
+    # ------------------------------------------------------------------ offline judge
 
-        # If claim says "under X" or "less than X", check if evidence numbers are below X
-        if has_under and claim_nums:
-            try:
-                claim_val = float(claim_nums[0])
-                evidence_vals = [float(n) for n in text_nums if n != claim_nums[0]]
-                for ev in evidence_vals:
-                    if ev < claim_val and ev > claim_val * 0.2:
-                        return "SUPPORTING"
-                    if ev > claim_val:
-                        return "CONTRADICTING"
-            except (ValueError, IndexError):
-                pass
-
-        # No modifier — exact number mismatch doesn't necessarily mean contradiction
-        # Only flag as contradiction if numbers are in the same semantic context (percentages, rankings, etc.)
-        return "NEUTRAL"
-
-    def _negation_is_claim_relevant(self, claim_words: set, text_lower: str, negation_markers: set) -> bool:
+    def _offline_verify(self, claim: str, chunks: List[Dict[str, Any]], historical: bool = False,
+                        changes_over_time: bool = False) -> Dict[str, Any]:
         """
-        Check if negation in evidence text is actually relevant to the claim topic.
-        Avoids false positives from unrelated negations (e.g., "not related to..." in a different paragraph).
+        Offline judge: DeBERTa-v3 NLI per chunk (keyword rules only if the model cannot load),
+        then the evidence-only aggregation in verdict_aggregator, then an OUTDATED check.
         """
-        # Find sentences containing negation
-        sentences = re.split(r'[.!?\n]', text_lower)
-        for sent in sentences:
-            sent_words = set(re.findall(r"\b[a-zA-Z0-9]{2,}\b", sent))
-            found_negation = [m for m in negation_markers if m in sent_words]
-            if found_negation:
-                # Check if this negation sentence also contains claim keywords
-                claim_overlap = claim_words.intersection(sent_words)
-                if len(claim_overlap) >= 1:
-                    # Require proximity: negation must be close to a claim keyword
-                    for neg in found_negation:
-                        idx_neg = sent.find(neg)
-                        for kw in claim_overlap:
-                            idx_kw = sent.find(kw)
-                            if idx_neg != -1 and idx_kw != -1 and abs(idx_neg - idx_kw) < 45:
-                                return True
-        return False
+        texts = [c.get("text", "") for c in chunks]
+        try:
+            stances = nli_evaluator.classify_chunks(claim, texts)
+            engine = "Offline NLI (DeBERTa-v3 cross-encoder)"
+        except RuntimeError:
+            stances = [self._keyword_stance(claim, t) for t in texts]
+            engine = "Offline keyword rules (NLI model unavailable - low accuracy)"
 
+        classified = []
+        for chunk, st in zip(chunks, stances):
+            classified.append({
+                "chunk_id": str(chunk.get("chunk_id", "")),
+                "source": chunk.get("source") or chunk.get("document_name"),
+                "credibility_score": normalize_credibility(chunk.get("credibility_score")),
+                "stance": st["stance"],
+                "score": st["score"],
+                "rationale": st["rationale"]
+            })
+
+        verdict = verdict_aggregator.decide(classified, historical=historical)
+        temporal_match = "Unverified"
+
+        # A present-tense claim that is refuted but whose past-tense form is entailed is OUTDATED
+        # (e.g. "Shinzo Abe is the current PM of Japan").
+        # Only for facts that change over time (who holds a role, explicitly "current" claims); otherwise
+        # "the Moon was made of cheese" style past-tense matches would turn myths into OUTDATED.
+        if (verdict == Verdict.REFUTED.value and not historical and changes_over_time
+                and engine.startswith("Offline NLI")):
+            past = to_past_tense(claim)
+            if past.lower() != claim.lower().strip() and nli_evaluator.entailed_with_end_signal(past, texts) >= STANCE_THRESHOLD:
+                verdict = Verdict.OUTDATED.value
+                temporal_match = "Outdated"
+
+        entity_match = self._entity_match(claim, texts)
+        sup = [c for c in classified if c["stance"] == "SUPPORTING"]
+        con = [c for c in classified if c["stance"] == "CONTRADICTING"]
+        return {
+            "verdict": verdict,
+            "explanation": self._offline_explanation(verdict, sup, con, len(classified)),
+            "key_reasoning": " | ".join(c["rationale"] for c in (sup + con)[:3]) or "No retrieved passage entailed or contradicted the claim.",
+            "entity_match": entity_match,
+            "country_match": "Not Applicable",
+            "role_match": "Not Applicable",
+            "temporal_match": temporal_match,
+            "chunk_classifications": classified,
+            "llm_provider_used": engine
+        }
+
+    @staticmethod
+    def _offline_explanation(verdict: str, sup: list, con: list, total: int) -> str:
+        n_sup = len({c["source"] for c in sup})
+        n_con = len({c["source"] for c in con})
+        counts = f"{n_sup} source(s) support the claim and {n_con} contradict it, out of {total} passage(s) retrieved."
+        text = {
+            Verdict.SUPPORTED.value: "The retrieved evidence supports this claim.",
+            Verdict.SUPPORTED_HISTORICALLY.value: "The retrieved evidence supports this claim about the past.",
+            Verdict.REFUTED.value: "The retrieved evidence contradicts this claim.",
+            Verdict.OUTDATED.value: "The evidence shows this was true in the past but is no longer the case.",
+            Verdict.CONFLICTING.value: "The retrieved sources disagree about this claim.",
+            Verdict.INSUFFICIENT_EVIDENCE.value: "The retrieved evidence neither confirms nor contradicts this claim.",
+        }[verdict]
+        return f"{text} {counts}"
+
+    @staticmethod
+    def _entity_match(claim: str, texts: List[str]) -> str:
+        """Match if some passage names the claim's subject, Mismatch if none mention it at all."""
+        m = re.split(r"\b(?:is|are|was|were|became|has|have|had|can|cannot)\b", claim.lower(), maxsplit=1)
+        subject = content_words(m[0]) if len(m) == 2 else set()
+        if not subject:
+            return "Unverified"
+        overlaps = [len(subject & content_words(t)) / len(subject) for t in texts]
+        if any(o >= 0.7 for o in overlaps):
+            return "Match"
+        if all(o == 0 for o in overlaps):
+            return "Mismatch"
+        return "Unverified"
+
+    @staticmethod
+    def _keyword_stance(claim: str, text: str) -> Dict[str, Any]:
+        """
+        Last-resort stance when the NLI model is unavailable: content-word overlap plus explicit
+        refutation phrases. Deliberately conservative - it rarely supports, and says it is a heuristic.
+        """
+        claim_words = content_words(claim)
+        text_lower = (text or "").lower()
+        overlap = len(claim_words & content_words(text_lower)) / max(1, len(claim_words))
+        refutations = ("cannot cure", "cannot treat", "ineffective", "not effective", "no biological activity",
+                       "zero biological activity", "debunked", "myth", "hoax", "false", "has not", "not overtaken")
+        if overlap >= 0.35 and any(p in text_lower for p in refutations):
+            return {"stance": "CONTRADICTING", "score": 0.6, "rationale": f"Keyword heuristic: refutation phrase with {overlap:.0%} term overlap."}
+        if overlap >= 0.8:
+            return {"stance": "SUPPORTING", "score": 0.6, "rationale": f"Keyword heuristic: {overlap:.0%} of claim terms present."}
+        return {"stance": "NEUTRAL", "score": 0.0, "rationale": f"Keyword heuristic: {overlap:.0%} term overlap, no decisive wording."}
 
     def _insufficient_evidence_response(self, claim: str, reason: str) -> Dict[str, Any]:
         return {
-            "verdict": "INSUFFICIENT EVIDENCE",
-            "confidence_score": 15.0,
-            "explanation": f"Unable to verify the claim '{claim}'. {reason}",
-            "key_reasoning": "The knowledge base does not currently index documents covering this specific topic.",
+            "verdict": Verdict.INSUFFICIENT_EVIDENCE.value,
+            "explanation": f"Unable to verify the claim. {reason}",
+            "key_reasoning": "No evidence was retrieved for this claim.",
             "entity_match": "Unverified",
             "country_match": "Not Applicable",
             "role_match": "Not Applicable",
             "temporal_match": "Unverified",
             "chunk_classifications": [],
-            "llm_provider_used": "Offline Safeguard"
+            "llm_provider_used": "None (no evidence)"
         }
+
 
 llm_service = LLMService()

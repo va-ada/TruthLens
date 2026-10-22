@@ -1,22 +1,32 @@
 # Evidence Policy
 
-TruthLens uses a strict hierarchical evidence policy to establish ground truth.
+## 1. Source credibility (0–1, used as a vote weight)
 
-## 1. Source Quality Hierarchy
-- **Primary / Official**: Direct sources (e.g., `.gov`, `.edu`, official press releases). Treated as ground truth for role and location claims.
-- **Reputable Secondary**: Verified news sources (e.g., Reuters, AP). Accepted for events and recent news.
-- **Encyclopedic**: (e.g., Wikipedia). Treated as context, NOT as ground-truth for exact current temporal status.
+| Source | Credibility | Where set |
+|---|---|---|
+| Seed dossiers from official / intergovernmental pages (WHO, CDC, IMF, PMO India, UN…) | 0.95 | `Type:` header in `data/trusted_docs/*.txt` |
+| Established news (RSS feeds) | 0.85–0.99 by feed | `news_sync_service.TRUSTED_RSS_FEEDS` |
+| Wikipedia (live) | 0.80 | `live_search_service.py`, treated as an encyclopedia, not an official record |
+| DuckDuckGo instant answer | 0.70 | `live_search_service.py` |
+| Client-supplied article text (`context_text`) | 0.60 | orchestrator, since it is the claimant's own material |
+| Uploaded documents | by filename/source keywords | `document_processor.detect_source_type` |
 
-## 2. Entity Matching Rules
-To prevent false equivalency (e.g., "Shinzo Abe is PM of India"), the engine mandates:
-- The **Subject** must align with the retrieved text.
-- The **Role/Predicate** must perfectly align with the subject.
-- A contradiction is triggered if the evidence explicitly places the subject in a different role/country.
+Every seed dossier section carries `Source`, `URL`, `Published`, `Retrieved` and `Type` lines, and those travel
+with each passage into the evidence shown to the user. No invented report IDs.
 
-## 3. Temporal Constraints
-- Claims containing "currently", "now", or present-tense verbs triggered `currentness_required = True`.
-- Stale evidence for a current claim results in `AMBIGUOUS TIME CONTEXT` or `CURRENT STATUS UNVERIFIED`, never `VERIFIED`.
+## 2. Independence
 
-## 4. Agreement Scoring
-- Agreement is strictly based on the number of **independent sources**, NOT the number of chunks retrieved from a single document.
-- One single source provides "Corroboration not established", whereas 3 independent sources provide "High agreement".
+Agreement counts **independent sources**, not passages. Several passages from one document are one vote, and
+a single source triggers the limitation "corroboration not established".
+
+## 3. Entity matching
+
+Support requires that some evidence names the claim's subject. A contradiction from the offline judge must
+cover at least half of the claim's key terms, so sentences about other people or topics are ignored.
+
+## 4. Time
+
+- Present-tense / "current" claims need supporting evidence dated within the claim type's freshness window
+  (90 days for current office holders, 365 otherwise). Otherwise the verdict is INSUFFICIENT_EVIDENCE.
+- A role claim refuted in the present but true in the past is OUTDATED.
+- Claims with a year are checked against date ranges stated in the evidence.
